@@ -9,31 +9,37 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#1B5E35;--green-l:#2D7A4F;--green-d:#0F3D22;--white:#FFFFFF;--gold:#D4AC0D;--gold-l:#F0C930;--bg:#F4F8F4;--border:#D6E4D8;--text:#1a1a1a;--muted:#6b7280;--r:12px;--sh:0 2px 8px rgba(0,0,0,.08)}
+:root{--green:#1B5E35;--green-l:#2D7A4F;--green-d:#0F3D22;--gold:#D4AC0D;--bg:#F4F8F4;--border:#D6E4D8;--text:#1a1a1a;--muted:#6b7280;--r:12px;--sh:0 2px 8px rgba(0,0,0,.08)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:var(--green);min-height:100vh;color:var(--text)}
 .center{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
-.auth-card{background:#fff;border-radius:var(--r);padding:36px;width:100%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.auth-card h1{font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:4px}
-.auth-card .sub{color:var(--muted);font-size:.85rem;margin-bottom:20px}
-.logo{text-align:center;margin-bottom:20px;font-size:3rem}
-.fg{margin-bottom:14px}
-label{display:block;font-size:.85rem;font-weight:500;margin-bottom:5px}
-input[type=text],input[type=password],input[type=number],select{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;color:var(--text);background:#fff;outline:none;transition:border-color .15s}
-input:focus,select:focus{border-color:var(--green)}
+.auth-card{background:#fff;border-radius:var(--r);padding:32px;width:100%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.auth-card h1{font-size:1.35rem;font-weight:700;color:var(--green);margin-bottom:4px}
+.sub{color:var(--muted);font-size:.83rem;margin-bottom:18px}
+.logo{text-align:center;margin-bottom:18px;font-size:2.8rem}
+.fg{margin-bottom:13px}
+label{display:block;font-size:.83rem;font-weight:500;margin-bottom:5px}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.875rem;color:var(--text);background:#fff;outline:none;transition:border-color .15s}
+input:focus{border-color:var(--green)}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:inherit;font-size:.875rem;font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:inherit;font-size:.875rem;font-weight:500;cursor:pointer;border:none;transition:all .15s}
 .btn-primary{background:var(--green);color:#fff;width:100%;justify-content:center}
 .btn-primary:hover{background:var(--green-l)}
-.btn-sm{padding:5px 11px;font-size:.78rem}
+.btn-sm{padding:5px 11px;font-size:.78rem;width:auto}
 .btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff}
 .btn-outline:hover{background:rgba(255,255,255,.1)}
 .btn-danger{background:#dc2626;color:#fff}
 .btn-danger:hover{background:#b91c1c}
 .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text)}
 .btn-ghost:hover{background:var(--bg)}
-.err{color:#dc2626;font-size:.8rem;margin-top:6px;display:none}
+.err{color:#dc2626;font-size:.78rem;margin-top:6px;display:none}
+.sql-block{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:8px;font-family:monospace;font-size:.7rem;line-height:1.6;overflow-x:auto;margin:10px 0;white-space:pre}
+.copy-btn{display:block;margin-top:6px;background:rgba(255,255,255,.1);color:#e2e8f0;border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:4px 10px;font-size:.72rem;cursor:pointer;font-family:inherit;width:100%}
+.copy-btn:hover{background:rgba(255,255,255,.2)}
+.step{font-size:.82rem;font-weight:600;color:var(--text);margin:12px 0 5px;display:flex;align-items:center;gap:6px}
+.sn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--green);color:#fff;border-radius:50%;font-size:.7rem;font-weight:700;flex-shrink:0}
+.link{color:var(--green);cursor:pointer;font-size:.82rem;text-decoration:underline;margin-top:10px;display:inline-block}
 /* App */
 #app{min-height:100vh;display:flex;flex-direction:column}
 .hdr{background:var(--green-d);color:#fff;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:8px}
@@ -41,11 +47,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:.7rem;font-weight:600;white-space:nowrap}
 .b-green{background:rgba(255,255,255,.15);color:#fff}
-.b-gold{background:var(--gold);color:#fff}
-.b-live{background:#22c55e;color:#fff;animation:pulse 2s infinite}
+.b-sync{background:#3b82f6;color:#fff}
 .b-admin{background:var(--gold);color:#fff}
 .b-red{background:#dc2626;color:#fff}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.b-live{background:#22c55e;color:#fff}
 .nav{background:var(--green-d);padding:0 8px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.1)}
 .nav::-webkit-scrollbar{display:none}
 .ntab{display:flex;align-items:center;gap:5px;padding:9px 12px;color:rgba(255,255,255,.6);font-size:.78rem;font-weight:500;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
@@ -62,10 +67,7 @@ td{padding:9px;border-bottom:1px solid var(--border)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg)}
 .rnk{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:.78rem;font-weight:700}
-.r1{background:var(--gold);color:#fff}
-.r2{background:#9ca3af;color:#fff}
-.r3{background:#b45309;color:#fff}
-.rx{background:var(--bg);color:var(--muted)}
+.r1{background:var(--gold);color:#fff}.r2{background:#9ca3af;color:#fff}.r3{background:#b45309;color:#fff}.rx{background:var(--bg);color:var(--muted)}
 .si{display:flex;align-items:center;gap:7px}
 .si input{width:48px;text-align:center;padding:6px 4px}
 .sep{font-weight:700;color:var(--muted)}
@@ -75,46 +77,67 @@ tr:hover td{background:var(--bg)}
 .mteams .name{font-weight:500;font-size:.9rem}
 .mmeta{font-size:.72rem;color:var(--muted);margin-top:2px}
 .mscore{font-size:1.1rem;font-weight:700;color:var(--green)}
-.p3{color:#16a34a;font-weight:700}
-.p2{color:#2563eb;font-weight:600}
-.p1{color:#d97706;font-weight:600}
-.p0{color:#dc2626}
+.p3{color:#16a34a;font-weight:700}.p2{color:#2563eb;font-weight:600}.p1{color:#d97706;font-weight:600}.p0{color:#dc2626}
 .ph{background:var(--green);color:#fff;padding:7px 14px;border-radius:7px;margin:16px 0 9px;font-weight:600;font-size:.85rem;display:flex;align-items:center;gap:7px}
 .bk{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:7px}
-.bk .bk-teams{display:flex;justify-content:space-between;align-items:center;font-size:.875rem}
-.bk .bk-score{font-weight:700;color:var(--green);font-size:1rem;margin:0 10px}
-.bk .bk-meta{font-size:.7rem;color:var(--muted);margin-top:3px}
+.bk .bkt{display:flex;justify-content:space-between;align-items:center;font-size:.875rem}
+.bk .bks{font-weight:700;color:var(--green);font-size:1rem;margin:0 10px}
+.bk .bkm{font-size:.7rem;color:var(--muted);margin-top:3px}
 .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
 .sec-title{font-size:1rem;font-weight:700;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:7px}
 .empty{text-align:center;padding:36px;color:var(--muted)}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:8px;font-size:.85rem;z-index:9999;display:none;box-shadow:0 4px 12px rgba(0,0,0,.25);max-width:300px}
-.toast.ok{background:#16a34a}
-.toast.err2{background:#dc2626}
-.me td{background:#f0fdf4;font-weight:600}
+.toast.ok{background:#16a34a}.toast.ko{background:#dc2626}
+tr.me td{background:#f0fdf4;font-weight:600}
 .bonus-box{background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:14px;margin-bottom:10px}
 hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
 tr.qual td{background:#f0fdf4}
-.link{color:var(--green);cursor:pointer;font-size:.82rem;text-decoration:underline;margin-top:10px;display:inline-block}
-@media(max-width:640px){.auth-card{padding:22px}.content{padding:10px}.card{padding:13px}.gg{grid-template-columns:1fr}}
+@media(max-width:640px){.auth-card{padding:20px}.content{padding:10px}.card{padding:13px}.gg{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="toast" class="toast"></div>
 
 <!-- SETUP -->
-<div id="s-setup" class="center">
+<div id="s-setup" class="center" hidden>
   <div class="auth-card">
     <div class="logo">🏆</div>
     <h1>Configuration initiale</h1>
-    <p class="sub">Coupe du Monde 2026 — Premier lancement</p>
-    <div class="fg"><label>URL racine Firebase</label>
-      <input type="text" id="su-url" placeholder="https://project-default-rtdb.firebaseio.com"></div>
+    <p class="sub">Coupe du Monde 2026 — Backend Supabase (PostgreSQL gratuit)</p>
+
+    <div class="step"><span class="sn">1</span> Créez un projet sur <a href="https://supabase.com" target="_blank" style="color:var(--green);margin-left:4px">supabase.com</a> (email seul)</div>
+
+    <div class="step"><span class="sn">2</span> Dans <strong>SQL Editor</strong>, exécutez ce script :</div>
+    <div class="sql-block" id="sql-block">create table participants (id text primary key, name text);
+create table matches (id text primary key, phase text, home text, away text, "date" text, "time" text, venue text, homescore int, awayscore int);
+create table pronostics (id text primary key, participantid text, matchid text, homescore int, awayscore int);
+create table bonus (id text primary key, participantid text, questionid text, answer text);
+create table bonus_results (id text primary key, answer text);
+create table settings (key text primary key, value text);
+alter table participants enable row level security;
+alter table matches enable row level security;
+alter table pronostics enable row level security;
+alter table bonus enable row level security;
+alter table bonus_results enable row level security;
+alter table settings enable row level security;
+create policy "all" on participants for all using (true) with check (true);
+create policy "all" on matches for all using (true) with check (true);
+create policy "all" on pronostics for all using (true) with check (true);
+create policy "all" on bonus for all using (true) with check (true);
+create policy "all" on bonus_results for all using (true) with check (true);
+create policy "all" on settings for all using (true) with check (true);</div>
+    <button class="copy-btn" onclick="copySQL()">📋 Copier le script SQL</button>
+
+    <div class="step" style="margin-top:14px"><span class="sn">3</span> Dans <strong>Project Settings → API</strong>, copiez vos clés :</div>
+    <div class="fg"><label>Project URL</label>
+      <input type="text" id="su-url" placeholder="https://xxxxxxxxxxxx.supabase.co"></div>
+    <div class="fg"><label>Anon public key</label>
+      <input type="text" id="su-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></div>
     <div class="fg"><label>Mot de passe administrateur</label>
-      <input type="password" id="su-pwd" placeholder="Choisissez un mot de passe"></div>
-    <div class="fg"><label>Confirmer le mot de passe</label>
-      <input type="password" id="su-pwd2" placeholder="Confirmez le mot de passe"></div>
+      <input type="password" id="su-pwd" placeholder="Choisissez un mot de passe admin"></div>
+
     <button class="btn btn-primary" onclick="doSetup()"><i class="ti ti-rocket"></i> Initialiser l'application</button>
     <p id="su-err" class="err"></p>
   </div>
@@ -127,14 +150,16 @@ tr.qual td{background:#f0fdf4}
     <h1>Pronostics CDM 2026</h1>
     <p class="sub">Connectez-vous avec votre prénom</p>
     <div class="fg"><label>Votre prénom</label>
-      <input type="text" id="li-name" placeholder="Ex: Yohann" autocomplete="off" oninput="onNameInput()" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <input type="text" id="li-name" placeholder="Ex: Yohann" autocomplete="off"
+        oninput="onNameInput()" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div id="li-admin-sec" style="display:none">
       <div class="fg"><label>Mot de passe admin</label>
-        <input type="password" id="li-pwd" placeholder="Mot de passe administrateur" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <input type="password" id="li-pwd" placeholder="Mot de passe administrateur"
+          onkeydown="if(event.key==='Enter')doLogin()"></div>
     </div>
     <button class="btn btn-primary" onclick="doLogin()"><i class="ti ti-login"></i> Connexion</button>
     <p id="li-err" class="err"></p>
-    <span class="link" onclick="showSetup()">⚙ Reconfigurer Firebase</span>
+    <span class="link" onclick="showSetup()">⚙ Reconfigurer Supabase</span>
   </div>
 </div>
 
@@ -143,7 +168,7 @@ tr.qual td{background:#f0fdf4}
   <div class="hdr">
     <div class="hdr-title"><i class="ti ti-trophy" style="color:var(--gold)"></i> CDM 2026</div>
     <div class="hdr-right">
-      <span id="sse-badge" class="badge b-green"><span class="spin"></span> Connexion…</span>
+      <span id="sync-badge" class="badge b-green"><span class="spin"></span> Connexion…</span>
       <span id="u-badge" class="badge b-green"></span>
       <button class="btn btn-sm btn-outline" onclick="doLogout()"><i class="ti ti-logout"></i></button>
     </div>
@@ -153,10 +178,13 @@ tr.qual td{background:#f0fdf4}
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────
-let DB='', sseSrc=null, sseR=0, user=null, admin=false, tab='classement', st={};
+// ── CONFIG ────────────────────────────────────────────
+let SB_URL='', SB_KEY='';
+let pollTimer=null;
+const POLL_MS=20000;
+let user=null, admin=false, tab='classement', st={};
 
-// ── SEED ───────────────────────────────────────────────
+// ── SEED DATA ─────────────────────────────────────────
 const SP=[
   {id:'p01',name:'Akram'},{id:'p02',name:'Alexia'},{id:'p03',name:'Charles'},
   {id:'p04',name:'Christian'},{id:'p05',name:'Dominique'},{id:'p06',name:'Dorian'},
@@ -168,289 +196,260 @@ const SP=[
 ];
 
 const SM=[
-  // Groupe A
-  {id:'m001',phase:'Groupe A',home:'Mexique',away:'Afrique du Sud',date:'2026-06-11',time:'15:00',venue:'Mexico City',homeScore:null,awayScore:null},
-  {id:'m002',phase:'Groupe A',home:'Corée du Sud',away:'Tchéquie',date:'2026-06-11',time:'22:00',venue:'Guadalajara',homeScore:null,awayScore:null},
-  {id:'m025',phase:'Groupe A',home:'Tchéquie',away:'Afrique du Sud',date:'2026-06-18',time:'12:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  {id:'m028',phase:'Groupe A',home:'Mexique',away:'Corée du Sud',date:'2026-06-18',time:'21:00',venue:'Guadalajara',homeScore:null,awayScore:null},
-  {id:'m053',phase:'Groupe A',home:'Tchéquie',away:'Mexique',date:'2026-06-24',time:'21:00',venue:'Mexico City',homeScore:null,awayScore:null},
-  {id:'m054',phase:'Groupe A',home:'Afrique du Sud',away:'Corée du Sud',date:'2026-06-24',time:'21:00',venue:'Monterrey',homeScore:null,awayScore:null},
-  // Groupe B
-  {id:'m003',phase:'Groupe B',home:'Canada',away:'Bosnie-Herzégovine',date:'2026-06-12',time:'15:00',venue:'Toronto',homeScore:null,awayScore:null},
-  {id:'m005',phase:'Groupe B',home:'Qatar',away:'Suisse',date:'2026-06-13',time:'15:00',venue:'San Francisco',homeScore:null,awayScore:null},
-  {id:'m026',phase:'Groupe B',home:'Suisse',away:'Bosnie-Herzégovine',date:'2026-06-18',time:'15:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m027',phase:'Groupe B',home:'Canada',away:'Qatar',date:'2026-06-18',time:'18:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  {id:'m049',phase:'Groupe B',home:'Suisse',away:'Canada',date:'2026-06-24',time:'15:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  {id:'m050',phase:'Groupe B',home:'Bosnie-Herzégovine',away:'Qatar',date:'2026-06-24',time:'15:00',venue:'Seattle',homeScore:null,awayScore:null},
-  // Groupe C
-  {id:'m006',phase:'Groupe C',home:'Brésil',away:'Maroc',date:'2026-06-13',time:'18:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m007',phase:'Groupe C',home:'Haïti',away:'Écosse',date:'2026-06-13',time:'21:00',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m030',phase:'Groupe C',home:'Écosse',away:'Maroc',date:'2026-06-19',time:'18:00',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m031',phase:'Groupe C',home:'Brésil',away:'Haïti',date:'2026-06-19',time:'20:30',venue:'Philadelphie',homeScore:null,awayScore:null},
-  {id:'m051',phase:'Groupe C',home:'Écosse',away:'Brésil',date:'2026-06-24',time:'18:00',venue:'Miami',homeScore:null,awayScore:null},
-  {id:'m052',phase:'Groupe C',home:'Maroc',away:'Haïti',date:'2026-06-24',time:'18:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  // Groupe D
-  {id:'m004',phase:'Groupe D',home:'États-Unis',away:'Paraguay',date:'2026-06-12',time:'21:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m008',phase:'Groupe D',home:'Australie',away:'Turquie',date:'2026-06-13',time:'00:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  {id:'m029',phase:'Groupe D',home:'États-Unis',away:'Australie',date:'2026-06-19',time:'15:00',venue:'Seattle',homeScore:null,awayScore:null},
-  {id:'m032',phase:'Groupe D',home:'Turquie',away:'Paraguay',date:'2026-06-19',time:'23:00',venue:'San Francisco',homeScore:null,awayScore:null},
-  {id:'m059',phase:'Groupe D',home:'Turquie',away:'États-Unis',date:'2026-06-25',time:'22:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m060',phase:'Groupe D',home:'Paraguay',away:'Australie',date:'2026-06-25',time:'22:00',venue:'San Francisco',homeScore:null,awayScore:null},
-  // Groupe E
-  {id:'m009',phase:'Groupe E',home:'Allemagne',away:'Curaçao',date:'2026-06-14',time:'13:00',venue:'Houston',homeScore:null,awayScore:null},
-  {id:'m011',phase:'Groupe E',home:"Côte d'Ivoire",away:'Équateur',date:'2026-06-14',time:'19:00',venue:'Philadelphie',homeScore:null,awayScore:null},
-  {id:'m034',phase:'Groupe E',home:'Allemagne',away:"Côte d'Ivoire",date:'2026-06-20',time:'16:00',venue:'Toronto',homeScore:null,awayScore:null},
-  {id:'m035',phase:'Groupe E',home:'Équateur',away:'Curaçao',date:'2026-06-20',time:'20:00',venue:'Kansas City',homeScore:null,awayScore:null},
-  {id:'m055',phase:'Groupe E',home:'Équateur',away:'Allemagne',date:'2026-06-25',time:'16:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m056',phase:'Groupe E',home:'Curaçao',away:"Côte d'Ivoire",date:'2026-06-25',time:'16:00',venue:'Philadelphie',homeScore:null,awayScore:null},
-  // Groupe F
-  {id:'m010',phase:'Groupe F',home:'Pays-Bas',away:'Japon',date:'2026-06-14',time:'16:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m012',phase:'Groupe F',home:'Suède',away:'Tunisie',date:'2026-06-14',time:'22:00',venue:'Monterrey',homeScore:null,awayScore:null},
-  {id:'m033',phase:'Groupe F',home:'Pays-Bas',away:'Suède',date:'2026-06-20',time:'13:00',venue:'Houston',homeScore:null,awayScore:null},
-  {id:'m036',phase:'Groupe F',home:'Tunisie',away:'Japon',date:'2026-06-20',time:'00:00',venue:'Monterrey',homeScore:null,awayScore:null},
-  {id:'m057',phase:'Groupe F',home:'Tunisie',away:'Pays-Bas',date:'2026-06-25',time:'19:00',venue:'Kansas City',homeScore:null,awayScore:null},
-  {id:'m058',phase:'Groupe F',home:'Japon',away:'Suède',date:'2026-06-25',time:'19:00',venue:'Dallas',homeScore:null,awayScore:null},
-  // Groupe G
-  {id:'m014',phase:'Groupe G',home:'Belgique',away:'Égypte',date:'2026-06-15',time:'15:00',venue:'Seattle',homeScore:null,awayScore:null},
-  {id:'m016',phase:'Groupe G',home:'Iran',away:'Nouvelle-Zélande',date:'2026-06-15',time:'21:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m038',phase:'Groupe G',home:'Belgique',away:'Iran',date:'2026-06-21',time:'15:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m040',phase:'Groupe G',home:'Nouvelle-Zélande',away:'Égypte',date:'2026-06-21',time:'21:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  {id:'m065',phase:'Groupe G',home:'Nouvelle-Zélande',away:'Belgique',date:'2026-06-26',time:'23:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  {id:'m066',phase:'Groupe G',home:'Égypte',away:'Iran',date:'2026-06-26',time:'23:00',venue:'Seattle',homeScore:null,awayScore:null},
-  // Groupe H
-  {id:'m013',phase:'Groupe H',home:'Espagne',away:'Cap-Vert',date:'2026-06-15',time:'12:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  {id:'m015',phase:'Groupe H',home:'Arabie Saoudite',away:'Uruguay',date:'2026-06-15',time:'18:00',venue:'Miami',homeScore:null,awayScore:null},
-  {id:'m037',phase:'Groupe H',home:'Espagne',away:'Arabie Saoudite',date:'2026-06-21',time:'12:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  {id:'m039',phase:'Groupe H',home:'Uruguay',away:'Cap-Vert',date:'2026-06-21',time:'18:00',venue:'Miami',homeScore:null,awayScore:null},
-  {id:'m063',phase:'Groupe H',home:'Uruguay',away:'Espagne',date:'2026-06-26',time:'20:00',venue:'Guadalajara',homeScore:null,awayScore:null},
-  {id:'m064',phase:'Groupe H',home:'Cap-Vert',away:'Arabie Saoudite',date:'2026-06-26',time:'20:00',venue:'Houston',homeScore:null,awayScore:null},
-  // Groupe I
-  {id:'m017',phase:'Groupe I',home:'France',away:'Sénégal',date:'2026-06-16',time:'15:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m018',phase:'Groupe I',home:'Irak',away:'Norvège',date:'2026-06-16',time:'18:00',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m042',phase:'Groupe I',home:'France',away:'Irak',date:'2026-06-22',time:'17:00',venue:'Philadelphie',homeScore:null,awayScore:null},
-  {id:'m043',phase:'Groupe I',home:'Norvège',away:'Sénégal',date:'2026-06-22',time:'20:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m061',phase:'Groupe I',home:'Norvège',away:'France',date:'2026-06-26',time:'15:00',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m062',phase:'Groupe I',home:'Sénégal',away:'Irak',date:'2026-06-26',time:'15:00',venue:'Toronto',homeScore:null,awayScore:null},
-  // Groupe J
-  {id:'m019',phase:'Groupe J',home:'Argentine',away:'Algérie',date:'2026-06-16',time:'21:00',venue:'Kansas City',homeScore:null,awayScore:null},
-  {id:'m020',phase:'Groupe J',home:'Autriche',away:'Jordanie',date:'2026-06-16',time:'00:00',venue:'San Francisco',homeScore:null,awayScore:null},
-  {id:'m041',phase:'Groupe J',home:'Argentine',away:'Autriche',date:'2026-06-22',time:'13:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m044',phase:'Groupe J',home:'Jordanie',away:'Algérie',date:'2026-06-22',time:'23:00',venue:'San Francisco',homeScore:null,awayScore:null},
-  {id:'m071',phase:'Groupe J',home:'Jordanie',away:'Argentine',date:'2026-06-27',time:'22:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m072',phase:'Groupe J',home:'Algérie',away:'Autriche',date:'2026-06-27',time:'22:00',venue:'Kansas City',homeScore:null,awayScore:null},
-  // Groupe K
-  {id:'m021',phase:'Groupe K',home:'Portugal',away:'Congo RD',date:'2026-06-17',time:'13:00',venue:'Houston',homeScore:null,awayScore:null},
-  {id:'m024',phase:'Groupe K',home:'Ouzbékistan',away:'Colombie',date:'2026-06-17',time:'22:00',venue:'Mexico City',homeScore:null,awayScore:null},
-  {id:'m045',phase:'Groupe K',home:'Portugal',away:'Ouzbékistan',date:'2026-06-23',time:'13:00',venue:'Houston',homeScore:null,awayScore:null},
-  {id:'m048',phase:'Groupe K',home:'Colombie',away:'Congo RD',date:'2026-06-23',time:'22:00',venue:'Guadalajara',homeScore:null,awayScore:null},
-  {id:'m069',phase:'Groupe K',home:'Colombie',away:'Portugal',date:'2026-06-27',time:'19:30',venue:'Miami',homeScore:null,awayScore:null},
-  {id:'m070',phase:'Groupe K',home:'Congo RD',away:'Ouzbékistan',date:'2026-06-27',time:'19:30',venue:'Atlanta',homeScore:null,awayScore:null},
-  // Groupe L
-  {id:'m022',phase:'Groupe L',home:'Angleterre',away:'Croatie',date:'2026-06-17',time:'16:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m023',phase:'Groupe L',home:'Ghana',away:'Panama',date:'2026-06-17',time:'19:00',venue:'Toronto',homeScore:null,awayScore:null},
-  {id:'m046',phase:'Groupe L',home:'Angleterre',away:'Ghana',date:'2026-06-23',time:'16:00',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m047',phase:'Groupe L',home:'Panama',away:'Croatie',date:'2026-06-23',time:'19:00',venue:'Toronto',homeScore:null,awayScore:null},
-  {id:'m067',phase:'Groupe L',home:'Panama',away:'Angleterre',date:'2026-06-27',time:'17:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m068',phase:'Groupe L',home:'Croatie',away:'Ghana',date:'2026-06-27',time:'17:00',venue:'Philadelphie',homeScore:null,awayScore:null},
-  // 16es
-  {id:'m073',phase:'16e de finale',home:'2e Gr.A',away:'2e Gr.B',date:'2026-06-28',time:'15:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m074',phase:'16e de finale',home:'1er Gr.E',away:'3e Gr.A/B/C/D/F',date:'2026-06-29',time:'16:30',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m075',phase:'16e de finale',home:'1er Gr.F',away:'2e Gr.C',date:'2026-06-29',time:'21:00',venue:'Monterrey',homeScore:null,awayScore:null},
-  {id:'m076',phase:'16e de finale',home:'1er Gr.C',away:'2e Gr.F',date:'2026-06-29',time:'13:00',venue:'Houston',homeScore:null,awayScore:null},
-  {id:'m077',phase:'16e de finale',home:'1er Gr.I',away:'3e Gr.C/D/F/G/H',date:'2026-06-30',time:'17:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m078',phase:'16e de finale',home:'2e Gr.E',away:'2e Gr.I',date:'2026-06-30',time:'13:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m079',phase:'16e de finale',home:'1er Gr.A',away:'3e Gr.C/E/F/H/I',date:'2026-06-30',time:'21:00',venue:'Mexico City',homeScore:null,awayScore:null},
-  {id:'m080',phase:'16e de finale',home:'1er Gr.L',away:'3e Gr.E/H/I/J/K',date:'2026-07-01',time:'12:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  {id:'m081',phase:'16e de finale',home:'1er Gr.D',away:'3e Gr.B/E/F/I/J',date:'2026-07-01',time:'20:00',venue:'San Francisco',homeScore:null,awayScore:null},
-  {id:'m082',phase:'16e de finale',home:'1er Gr.G',away:'3e Gr.A/E/H/I/J',date:'2026-07-01',time:'16:00',venue:'Seattle',homeScore:null,awayScore:null},
-  {id:'m083',phase:'16e de finale',home:'2e Gr.K',away:'2e Gr.L',date:'2026-07-02',time:'19:00',venue:'Toronto',homeScore:null,awayScore:null},
-  {id:'m084',phase:'16e de finale',home:'1er Gr.H',away:'2e Gr.J',date:'2026-07-02',time:'15:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m085',phase:'16e de finale',home:'1er Gr.B',away:'3e Gr.E/F/G/I/J',date:'2026-07-02',time:'23:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  {id:'m086',phase:'16e de finale',home:'1er Gr.J',away:'2e Gr.H',date:'2026-07-03',time:'18:00',venue:'Miami',homeScore:null,awayScore:null},
-  {id:'m087',phase:'16e de finale',home:'1er Gr.K',away:'3e Gr.D/E/I/J/L',date:'2026-07-03',time:'21:30',venue:'Kansas City',homeScore:null,awayScore:null},
-  {id:'m088',phase:'16e de finale',home:'2e Gr.D',away:'2e Gr.G',date:'2026-07-03',time:'14:00',venue:'Dallas',homeScore:null,awayScore:null},
-  // Huitièmes
-  {id:'m089',phase:'Huitième de finale',home:'V.M74',away:'V.M77',date:'2026-07-04',time:'17:00',venue:'Philadelphie',homeScore:null,awayScore:null},
-  {id:'m090',phase:'Huitième de finale',home:'V.M73',away:'V.M75',date:'2026-07-04',time:'13:00',venue:'Houston',homeScore:null,awayScore:null},
-  {id:'m091',phase:'Huitième de finale',home:'V.M76',away:'V.M78',date:'2026-07-05',time:'16:00',venue:'New York/NJ',homeScore:null,awayScore:null},
-  {id:'m092',phase:'Huitième de finale',home:'V.M79',away:'V.M80',date:'2026-07-05',time:'20:00',venue:'Mexico City',homeScore:null,awayScore:null},
-  {id:'m093',phase:'Huitième de finale',home:'V.M83',away:'V.M84',date:'2026-07-06',time:'15:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m094',phase:'Huitième de finale',home:'V.M81',away:'V.M82',date:'2026-07-06',time:'20:00',venue:'Seattle',homeScore:null,awayScore:null},
-  {id:'m095',phase:'Huitième de finale',home:'V.M86',away:'V.M88',date:'2026-07-07',time:'12:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  {id:'m096',phase:'Huitième de finale',home:'V.M85',away:'V.M87',date:'2026-07-07',time:'16:00',venue:'Vancouver',homeScore:null,awayScore:null},
-  // Quarts
-  {id:'m097',phase:'Quart de finale',home:'V.M89',away:'V.M90',date:'2026-07-09',time:'16:00',venue:'Boston',homeScore:null,awayScore:null},
-  {id:'m098',phase:'Quart de finale',home:'V.M93',away:'V.M94',date:'2026-07-10',time:'15:00',venue:'Los Angeles',homeScore:null,awayScore:null},
-  {id:'m099',phase:'Quart de finale',home:'V.M91',away:'V.M92',date:'2026-07-11',time:'17:00',venue:'Miami',homeScore:null,awayScore:null},
-  {id:'m100',phase:'Quart de finale',home:'V.M95',away:'V.M96',date:'2026-07-11',time:'21:00',venue:'Kansas City',homeScore:null,awayScore:null},
-  // Demis
-  {id:'m101',phase:'Demi-finale',home:'V.M97',away:'V.M98',date:'2026-07-14',time:'15:00',venue:'Dallas',homeScore:null,awayScore:null},
-  {id:'m102',phase:'Demi-finale',home:'V.M99',away:'V.M100',date:'2026-07-15',time:'15:00',venue:'Atlanta',homeScore:null,awayScore:null},
-  // 3e place
-  {id:'m103',phase:'3e place',home:'Perdant M101',away:'Perdant M102',date:'2026-07-18',time:'17:00',venue:'Miami',homeScore:null,awayScore:null},
-  // Finale
-  {id:'m104',phase:'Finale',home:'V.M101',away:'V.M102',date:'2026-07-19',time:'15:00',venue:'New York/NJ',homeScore:null,awayScore:null}
+  {id:'m001',phase:'Groupe A',home:'Mexique',away:'Afrique du Sud',date:'2026-06-11',time:'15:00',venue:'Mexico City',homescore:null,awayscore:null},
+  {id:'m002',phase:'Groupe A',home:'Corée du Sud',away:'Tchéquie',date:'2026-06-11',time:'22:00',venue:'Guadalajara',homescore:null,awayscore:null},
+  {id:'m025',phase:'Groupe A',home:'Tchéquie',away:'Afrique du Sud',date:'2026-06-18',time:'12:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m028',phase:'Groupe A',home:'Mexique',away:'Corée du Sud',date:'2026-06-18',time:'21:00',venue:'Guadalajara',homescore:null,awayscore:null},
+  {id:'m053',phase:'Groupe A',home:'Tchéquie',away:'Mexique',date:'2026-06-24',time:'21:00',venue:'Mexico City',homescore:null,awayscore:null},
+  {id:'m054',phase:'Groupe A',home:'Afrique du Sud',away:'Corée du Sud',date:'2026-06-24',time:'21:00',venue:'Monterrey',homescore:null,awayscore:null},
+  {id:'m003',phase:'Groupe B',home:'Canada',away:'Bosnie-Herzégovine',date:'2026-06-12',time:'15:00',venue:'Toronto',homescore:null,awayscore:null},
+  {id:'m005',phase:'Groupe B',home:'Qatar',away:'Suisse',date:'2026-06-13',time:'15:00',venue:'San Francisco',homescore:null,awayscore:null},
+  {id:'m026',phase:'Groupe B',home:'Suisse',away:'Bosnie-Herzégovine',date:'2026-06-18',time:'15:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m027',phase:'Groupe B',home:'Canada',away:'Qatar',date:'2026-06-18',time:'18:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m049',phase:'Groupe B',home:'Suisse',away:'Canada',date:'2026-06-24',time:'15:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m050',phase:'Groupe B',home:'Bosnie-Herzégovine',away:'Qatar',date:'2026-06-24',time:'15:00',venue:'Seattle',homescore:null,awayscore:null},
+  {id:'m006',phase:'Groupe C',home:'Brésil',away:'Maroc',date:'2026-06-13',time:'18:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m007',phase:'Groupe C',home:'Haïti',away:'Écosse',date:'2026-06-13',time:'21:00',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m030',phase:'Groupe C',home:'Écosse',away:'Maroc',date:'2026-06-19',time:'18:00',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m031',phase:'Groupe C',home:'Brésil',away:'Haïti',date:'2026-06-19',time:'20:30',venue:'Philadelphie',homescore:null,awayscore:null},
+  {id:'m051',phase:'Groupe C',home:'Écosse',away:'Brésil',date:'2026-06-24',time:'18:00',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m052',phase:'Groupe C',home:'Maroc',away:'Haïti',date:'2026-06-24',time:'18:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m004',phase:'Groupe D',home:'États-Unis',away:'Paraguay',date:'2026-06-12',time:'21:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m008',phase:'Groupe D',home:'Australie',away:'Turquie',date:'2026-06-13',time:'00:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m029',phase:'Groupe D',home:'États-Unis',away:'Australie',date:'2026-06-19',time:'15:00',venue:'Seattle',homescore:null,awayscore:null},
+  {id:'m032',phase:'Groupe D',home:'Turquie',away:'Paraguay',date:'2026-06-19',time:'23:00',venue:'San Francisco',homescore:null,awayscore:null},
+  {id:'m059',phase:'Groupe D',home:'Turquie',away:'États-Unis',date:'2026-06-25',time:'22:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m060',phase:'Groupe D',home:'Paraguay',away:'Australie',date:'2026-06-25',time:'22:00',venue:'San Francisco',homescore:null,awayscore:null},
+  {id:'m009',phase:'Groupe E',home:'Allemagne',away:'Curaçao',date:'2026-06-14',time:'13:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m011',phase:'Groupe E',home:"Côte d'Ivoire",away:'Équateur',date:'2026-06-14',time:'19:00',venue:'Philadelphie',homescore:null,awayscore:null},
+  {id:'m034',phase:'Groupe E',home:'Allemagne',away:"Côte d'Ivoire",date:'2026-06-20',time:'16:00',venue:'Toronto',homescore:null,awayscore:null},
+  {id:'m035',phase:'Groupe E',home:'Équateur',away:'Curaçao',date:'2026-06-20',time:'20:00',venue:'Kansas City',homescore:null,awayscore:null},
+  {id:'m055',phase:'Groupe E',home:'Équateur',away:'Allemagne',date:'2026-06-25',time:'16:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m056',phase:'Groupe E',home:'Curaçao',away:"Côte d'Ivoire",date:'2026-06-25',time:'16:00',venue:'Philadelphie',homescore:null,awayscore:null},
+  {id:'m010',phase:'Groupe F',home:'Pays-Bas',away:'Japon',date:'2026-06-14',time:'16:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m012',phase:'Groupe F',home:'Suède',away:'Tunisie',date:'2026-06-14',time:'22:00',venue:'Monterrey',homescore:null,awayscore:null},
+  {id:'m033',phase:'Groupe F',home:'Pays-Bas',away:'Suède',date:'2026-06-20',time:'13:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m036',phase:'Groupe F',home:'Tunisie',away:'Japon',date:'2026-06-20',time:'00:00',venue:'Monterrey',homescore:null,awayscore:null},
+  {id:'m057',phase:'Groupe F',home:'Tunisie',away:'Pays-Bas',date:'2026-06-25',time:'19:00',venue:'Kansas City',homescore:null,awayscore:null},
+  {id:'m058',phase:'Groupe F',home:'Japon',away:'Suède',date:'2026-06-25',time:'19:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m014',phase:'Groupe G',home:'Belgique',away:'Égypte',date:'2026-06-15',time:'15:00',venue:'Seattle',homescore:null,awayscore:null},
+  {id:'m016',phase:'Groupe G',home:'Iran',away:'Nouvelle-Zélande',date:'2026-06-15',time:'21:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m038',phase:'Groupe G',home:'Belgique',away:'Iran',date:'2026-06-21',time:'15:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m040',phase:'Groupe G',home:'Nouvelle-Zélande',away:'Égypte',date:'2026-06-21',time:'21:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m065',phase:'Groupe G',home:'Nouvelle-Zélande',away:'Belgique',date:'2026-06-26',time:'23:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m066',phase:'Groupe G',home:'Égypte',away:'Iran',date:'2026-06-26',time:'23:00',venue:'Seattle',homescore:null,awayscore:null},
+  {id:'m013',phase:'Groupe H',home:'Espagne',away:'Cap-Vert',date:'2026-06-15',time:'12:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m015',phase:'Groupe H',home:'Arabie Saoudite',away:'Uruguay',date:'2026-06-15',time:'18:00',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m037',phase:'Groupe H',home:'Espagne',away:'Arabie Saoudite',date:'2026-06-21',time:'12:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m039',phase:'Groupe H',home:'Uruguay',away:'Cap-Vert',date:'2026-06-21',time:'18:00',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m063',phase:'Groupe H',home:'Uruguay',away:'Espagne',date:'2026-06-26',time:'20:00',venue:'Guadalajara',homescore:null,awayscore:null},
+  {id:'m064',phase:'Groupe H',home:'Cap-Vert',away:'Arabie Saoudite',date:'2026-06-26',time:'20:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m017',phase:'Groupe I',home:'France',away:'Sénégal',date:'2026-06-16',time:'15:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m018',phase:'Groupe I',home:'Irak',away:'Norvège',date:'2026-06-16',time:'18:00',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m042',phase:'Groupe I',home:'France',away:'Irak',date:'2026-06-22',time:'17:00',venue:'Philadelphie',homescore:null,awayscore:null},
+  {id:'m043',phase:'Groupe I',home:'Norvège',away:'Sénégal',date:'2026-06-22',time:'20:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m061',phase:'Groupe I',home:'Norvège',away:'France',date:'2026-06-26',time:'15:00',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m062',phase:'Groupe I',home:'Sénégal',away:'Irak',date:'2026-06-26',time:'15:00',venue:'Toronto',homescore:null,awayscore:null},
+  {id:'m019',phase:'Groupe J',home:'Argentine',away:'Algérie',date:'2026-06-16',time:'21:00',venue:'Kansas City',homescore:null,awayscore:null},
+  {id:'m020',phase:'Groupe J',home:'Autriche',away:'Jordanie',date:'2026-06-16',time:'00:00',venue:'San Francisco',homescore:null,awayscore:null},
+  {id:'m041',phase:'Groupe J',home:'Argentine',away:'Autriche',date:'2026-06-22',time:'13:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m044',phase:'Groupe J',home:'Jordanie',away:'Algérie',date:'2026-06-22',time:'23:00',venue:'San Francisco',homescore:null,awayscore:null},
+  {id:'m071',phase:'Groupe J',home:'Jordanie',away:'Argentine',date:'2026-06-27',time:'22:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m072',phase:'Groupe J',home:'Algérie',away:'Autriche',date:'2026-06-27',time:'22:00',venue:'Kansas City',homescore:null,awayscore:null},
+  {id:'m021',phase:'Groupe K',home:'Portugal',away:'Congo RD',date:'2026-06-17',time:'13:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m024',phase:'Groupe K',home:'Ouzbékistan',away:'Colombie',date:'2026-06-17',time:'22:00',venue:'Mexico City',homescore:null,awayscore:null},
+  {id:'m045',phase:'Groupe K',home:'Portugal',away:'Ouzbékistan',date:'2026-06-23',time:'13:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m048',phase:'Groupe K',home:'Colombie',away:'Congo RD',date:'2026-06-23',time:'22:00',venue:'Guadalajara',homescore:null,awayscore:null},
+  {id:'m069',phase:'Groupe K',home:'Colombie',away:'Portugal',date:'2026-06-27',time:'19:30',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m070',phase:'Groupe K',home:'Congo RD',away:'Ouzbékistan',date:'2026-06-27',time:'19:30',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m022',phase:'Groupe L',home:'Angleterre',away:'Croatie',date:'2026-06-17',time:'16:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m023',phase:'Groupe L',home:'Ghana',away:'Panama',date:'2026-06-17',time:'19:00',venue:'Toronto',homescore:null,awayscore:null},
+  {id:'m046',phase:'Groupe L',home:'Angleterre',away:'Ghana',date:'2026-06-23',time:'16:00',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m047',phase:'Groupe L',home:'Panama',away:'Croatie',date:'2026-06-23',time:'19:00',venue:'Toronto',homescore:null,awayscore:null},
+  {id:'m067',phase:'Groupe L',home:'Panama',away:'Angleterre',date:'2026-06-27',time:'17:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m068',phase:'Groupe L',home:'Croatie',away:'Ghana',date:'2026-06-27',time:'17:00',venue:'Philadelphie',homescore:null,awayscore:null},
+  {id:'m073',phase:'16e de finale',home:'2e Gr.A',away:'2e Gr.B',date:'2026-06-28',time:'15:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m074',phase:'16e de finale',home:'1er Gr.E',away:'3e Gr.A/B/C/D/F',date:'2026-06-29',time:'16:30',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m075',phase:'16e de finale',home:'1er Gr.F',away:'2e Gr.C',date:'2026-06-29',time:'21:00',venue:'Monterrey',homescore:null,awayscore:null},
+  {id:'m076',phase:'16e de finale',home:'1er Gr.C',away:'2e Gr.F',date:'2026-06-29',time:'13:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m077',phase:'16e de finale',home:'1er Gr.I',away:'3e Gr.C/D/F/G/H',date:'2026-06-30',time:'17:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m078',phase:'16e de finale',home:'2e Gr.E',away:'2e Gr.I',date:'2026-06-30',time:'13:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m079',phase:'16e de finale',home:'1er Gr.A',away:'3e Gr.C/E/F/H/I',date:'2026-06-30',time:'21:00',venue:'Mexico City',homescore:null,awayscore:null},
+  {id:'m080',phase:'16e de finale',home:'1er Gr.L',away:'3e Gr.E/H/I/J/K',date:'2026-07-01',time:'12:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m081',phase:'16e de finale',home:'1er Gr.D',away:'3e Gr.B/E/F/I/J',date:'2026-07-01',time:'20:00',venue:'San Francisco',homescore:null,awayscore:null},
+  {id:'m082',phase:'16e de finale',home:'1er Gr.G',away:'3e Gr.A/E/H/I/J',date:'2026-07-01',time:'16:00',venue:'Seattle',homescore:null,awayscore:null},
+  {id:'m083',phase:'16e de finale',home:'2e Gr.K',away:'2e Gr.L',date:'2026-07-02',time:'19:00',venue:'Toronto',homescore:null,awayscore:null},
+  {id:'m084',phase:'16e de finale',home:'1er Gr.H',away:'2e Gr.J',date:'2026-07-02',time:'15:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m085',phase:'16e de finale',home:'1er Gr.B',away:'3e Gr.E/F/G/I/J',date:'2026-07-02',time:'23:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m086',phase:'16e de finale',home:'1er Gr.J',away:'2e Gr.H',date:'2026-07-03',time:'18:00',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m087',phase:'16e de finale',home:'1er Gr.K',away:'3e Gr.D/E/I/J/L',date:'2026-07-03',time:'21:30',venue:'Kansas City',homescore:null,awayscore:null},
+  {id:'m088',phase:'16e de finale',home:'2e Gr.D',away:'2e Gr.G',date:'2026-07-03',time:'14:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m089',phase:'Huitième de finale',home:'V.M74',away:'V.M77',date:'2026-07-04',time:'17:00',venue:'Philadelphie',homescore:null,awayscore:null},
+  {id:'m090',phase:'Huitième de finale',home:'V.M73',away:'V.M75',date:'2026-07-04',time:'13:00',venue:'Houston',homescore:null,awayscore:null},
+  {id:'m091',phase:'Huitième de finale',home:'V.M76',away:'V.M78',date:'2026-07-05',time:'16:00',venue:'New York/NJ',homescore:null,awayscore:null},
+  {id:'m092',phase:'Huitième de finale',home:'V.M79',away:'V.M80',date:'2026-07-05',time:'20:00',venue:'Mexico City',homescore:null,awayscore:null},
+  {id:'m093',phase:'Huitième de finale',home:'V.M83',away:'V.M84',date:'2026-07-06',time:'15:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m094',phase:'Huitième de finale',home:'V.M81',away:'V.M82',date:'2026-07-06',time:'20:00',venue:'Seattle',homescore:null,awayscore:null},
+  {id:'m095',phase:'Huitième de finale',home:'V.M86',away:'V.M88',date:'2026-07-07',time:'12:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m096',phase:'Huitième de finale',home:'V.M85',away:'V.M87',date:'2026-07-07',time:'16:00',venue:'Vancouver',homescore:null,awayscore:null},
+  {id:'m097',phase:'Quart de finale',home:'V.M89',away:'V.M90',date:'2026-07-09',time:'16:00',venue:'Boston',homescore:null,awayscore:null},
+  {id:'m098',phase:'Quart de finale',home:'V.M93',away:'V.M94',date:'2026-07-10',time:'15:00',venue:'Los Angeles',homescore:null,awayscore:null},
+  {id:'m099',phase:'Quart de finale',home:'V.M91',away:'V.M92',date:'2026-07-11',time:'17:00',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m100',phase:'Quart de finale',home:'V.M95',away:'V.M96',date:'2026-07-11',time:'21:00',venue:'Kansas City',homescore:null,awayscore:null},
+  {id:'m101',phase:'Demi-finale',home:'V.M97',away:'V.M98',date:'2026-07-14',time:'15:00',venue:'Dallas',homescore:null,awayscore:null},
+  {id:'m102',phase:'Demi-finale',home:'V.M99',away:'V.M100',date:'2026-07-15',time:'15:00',venue:'Atlanta',homescore:null,awayscore:null},
+  {id:'m103',phase:'3e place',home:'Perdant M101',away:'Perdant M102',date:'2026-07-18',time:'17:00',venue:'Miami',homescore:null,awayscore:null},
+  {id:'m104',phase:'Finale',home:'V.M101',away:'V.M102',date:'2026-07-19',time:'15:00',venue:'New York/NJ',homescore:null,awayscore:null}
 ];
 
 const SBQ=[
-  {id:'q1',label:'Vainqueur de la Coupe du Monde',type:'text'},
-  {id:'q2',label:'Meilleur buteur',type:'text'},
-  {id:'q3',label:'Meilleure équipe du tournoi',type:'text'}
+  {id:'q1',label:'Vainqueur de la Coupe du Monde'},
+  {id:'q2',label:'Meilleur buteur'},
+  {id:'q3',label:'Meilleure équipe du tournoi'}
 ];
 
-// ── UTILS ──────────────────────────────────────────────
+const PHASES=['Groupe A','Groupe B','Groupe C','Groupe D','Groupe E','Groupe F','Groupe G','Groupe H','Groupe I','Groupe J','Groupe K','Groupe L','16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
+
+// ── UTILS ─────────────────────────────────────────────
 function today(){const d=new Date();return d.getFullYear()+'-'+S2(d.getMonth()+1)+'-'+S2(d.getDate())}
 function S2(n){return String(n).padStart(2,'0')}
 function genId(){return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-
-function toast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast'+(type?' '+type:'');
-  t.style.display='block'; clearTimeout(t._t);
-  t._t=setTimeout(()=>{t.style.display='none'},3000);
-}
+function toast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(type?' '+type:'');t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>{t.style.display='none'},3000)}
 function shErr(id,msg){const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block'}}
 function hiErr(id){const e=document.getElementById(id);if(e)e.style.display='none'}
+function copySQL(){navigator.clipboard.writeText(document.getElementById('sql-block').textContent).then(()=>toast('SQL copié ✓','ok'))}
 
-// ── GETTERS ────────────────────────────────────────────
+// ── SUPABASE API ──────────────────────────────────────
+function H(extra={}){return{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json',...extra}}
+
+async function sbGet(table,qs=''){
+  const r=await fetch(`${SB_URL}/rest/v1/${table}?select=*${qs}`,{headers:H()});
+  if(!r.ok)throw new Error(`Lecture ${table} impossible (${r.status}). Vérifiez l'URL et la clé anon.`);
+  return r.json();
+}
+
+async function sbUpsert(table,data){
+  const body=Array.isArray(data)?data:[data];
+  const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:H({'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
+  if(!r.ok){const t=await r.text();throw new Error(`Écriture ${table} impossible (${r.status}): ${t}`)}
+}
+
+async function sbPatch(table,id,data){
+  const r=await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:H({'Prefer':'return=minimal'}),body:JSON.stringify(data)});
+  if(!r.ok)throw new Error(`Mise à jour ${table} impossible (${r.status})`);
+}
+
+// ── LECTURE COMPLÈTE ──────────────────────────────────
+async function sbReadAll(){
+  const [parts,matches,prons,bonus,br,settings]=await Promise.all([
+    sbGet('participants'),sbGet('matches'),sbGet('pronostics'),
+    sbGet('bonus'),sbGet('bonus_results'),sbGet('settings')
+  ]);
+  const s={};
+  s.participants=Object.fromEntries(parts.map(p=>[p.id,p]));
+  s.matches=Object.fromEntries(matches.map(m=>[m.id,{...m,homeScore:m.homescore,awayScore:m.awayscore}]));
+  s.pronostics=Object.fromEntries(prons.map(p=>[p.id,{...p,participantId:p.participantid,matchId:p.matchid,homeScore:p.homescore,awayScore:p.awayscore}]));
+  s.bonus={};
+  bonus.forEach(b=>{if(!s.bonus[b.participantid])s.bonus[b.participantid]={};s.bonus[b.participantid][b.questionid]=b.answer});
+  s.bonusResults=Object.fromEntries(br.map(r=>[r.id,r.answer]));
+  s.bonusQuestions=SBQ;
+  s.settings={adminPwd:(settings.find(x=>x.key==='adminpwd')||{}).value||''};
+  return s;
+}
+
+// ── INIT DB (premier lancement) ───────────────────────
+async function sbInit(url,key,adminPwd){
+  SB_URL=url.replace(/\/$/,''); SB_KEY=key;
+  await sbUpsert('participants',SP);
+  await sbUpsert('matches',SM);
+  await sbUpsert('settings',{key:'adminpwd',value:adminPwd});
+  window.location.hash=btoa(JSON.stringify({url:SB_URL,key:SB_KEY}));
+  st=await sbReadAll();
+}
+
+// ── POLLING (synchro toutes les 20s) ──────────────────
+function startPolling(){
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(async()=>{
+    try{st=await sbReadAll();renderTab();setSyncBadge(true)}
+    catch{setSyncBadge(false)}
+  },POLL_MS);
+  setSyncBadge(true);
+}
+function stopPolling(){clearInterval(pollTimer);pollTimer=null}
+function setSyncBadge(ok){
+  const b=document.getElementById('sync-badge');if(!b)return;
+  if(ok){const t=new Date().toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'});b.innerHTML=`<i class="ti ti-refresh"></i> ${t}`;b.className='badge b-sync'}
+  else{b.innerHTML='<i class="ti ti-wifi-off"></i> Hors ligne';b.className='badge b-red'}
+}
+
+// ── GETTERS ───────────────────────────────────────────
 function getParts(){return Object.values(st.participants||{})}
 function getMatches(){return Object.values(st.matches||{}).sort((a,b)=>a.id.localeCompare(b.id))}
 function getProns(){return st.pronostics||{}}
 function getBonus(){return st.bonus||{}}
-function getBQ(){return st.bonusQuestions||SBQ}
-function getSettings(){return st.settings||{}}
 function getBR(){return st.bonusResults||{}}
+function getSettings(){return st.settings||{}}
 
-// ── FIREBASE ───────────────────────────────────────────
-async function fbRead(){const r=await fetch(DB+'.json');return r.ok?r.json():null}
-async function fbWrite(data){const r=await fetch(DB+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return r.ok}
-async function apiPatch(path,obj){const r=await fetch(`${DB}/${path}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});return r.ok}
-async function apiPut(path,val){const r=await fetch(`${DB}/${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(val)});return r.ok}
-
-async function fbInit(rootUrl,adminPwd){
-  const base=rootUrl.replace(/\/$/,'');
-  DB=base+'/cdm2026';
-  const po={},mo={};
-  SP.forEach(p=>po[p.id]=p);
-  SM.forEach(m=>mo[m.id]=m);
-  const data={participants:po,matches:mo,pronostics:{},bonus:{},bonusQuestions:SBQ,bonusResults:{},settings:{adminPwd,lastModified:Date.now()}};
-  const ok=await fbWrite(data);
-  if(ok){window.location.hash=btoa(JSON.stringify({dbUrl:DB}));st=data;return true}
-  return false;
-}
-
-// ── SSE ────────────────────────────────────────────────
-function setupSSE(){
-  if(sseSrc){try{sseSrc.close()}catch{}sseSrc=null}
-  sseSrc=new EventSource(`${DB}.json`);
-  sseSrc.addEventListener('put',e=>{
-    try{const {data}=JSON.parse(e.data);if(data)applyState(data)}catch{}
-  });
-  sseSrc.onerror=()=>{
-    sseSrc.close();sseSrc=null;sseR++;
-    setBadge(false);
-    setTimeout(setupSSE,Math.min(3000*sseR,30000));
-  };
-  sseSrc.onopen=()=>{sseR=0;setBadge(true)};
-}
-
-function setBadge(ok){
-  const b=document.getElementById('sse-badge');if(!b)return;
-  if(ok){b.innerHTML='<i class="ti ti-wifi"></i> Temps réel';b.className='badge b-live'}
-  else{b.innerHTML='<span class="spin"></span> Reconnexion…';b.className='badge b-green'}
-}
-
-function applyState(data){
-  if(data.participants)st.participants=data.participants;
-  if(data.matches)st.matches=data.matches;
-  if(data.pronostics!==undefined)st.pronostics=data.pronostics||{};
-  if(data.bonus!==undefined)st.bonus=data.bonus||{};
-  if(data.bonusQuestions)st.bonusQuestions=data.bonusQuestions;
-  if(data.bonusResults!==undefined)st.bonusResults=data.bonusResults||{};
-  if(data.settings)st.settings=data.settings;
-  renderTab();
-}
-
-// ── POINTS ─────────────────────────────────────────────
+// ── POINTS ────────────────────────────────────────────
 function calcPts(p,m){
   if(m.homeScore==null||m.awayScore==null)return null;
   if(!p||p.homeScore==null||p.awayScore==null)return 0;
   const ph=+p.homeScore,pa=+p.awayScore,mh=+m.homeScore,ma=+m.awayScore;
   if(ph===mh&&pa===ma)return 3;
-  const pw=ph>pa?'h':pa>ph?'a':'d', rw=mh>ma?'h':ma>mh?'a':'d';
-  if(pw===rw){
-    if(pw==='d')return 1;
-    if((ph-pa)===(mh-ma))return 2;
-    return 1;
-  }
+  const pw=ph>pa?'h':pa>ph?'a':'d',rw=mh>ma?'h':ma>mh?'a':'d';
+  if(pw===rw){if(pw==='d')return 1;if((ph-pa)===(mh-ma))return 2;return 1}
   return 0;
 }
-
 function calcTotal(pid){
   let t=0;
-  const pr=getProns(),br=getBR(),bq=getBQ(),bd=getBonus();
-  getMatches().forEach(m=>{
-    if(m.homeScore==null)return;
-    const pts=calcPts(pr[pid+'_'+m.id],m);
-    if(pts)t+=pts;
-  });
+  const pr=getProns(),br=getBR(),bd=getBonus();
+  getMatches().forEach(m=>{if(m.homeScore!=null){const pts=calcPts(pr[pid+'_'+m.id],m);if(pts)t+=pts}});
   const ub=bd[pid]||{};
-  bq.forEach(q=>{
-    const r=br[q.id];
-    if(r&&ub[q.id]&&ub[q.id].trim().toLowerCase()===r.trim().toLowerCase())t+=5;
-  });
+  SBQ.forEach(q=>{const r=br[q.id];if(r&&ub[q.id]&&ub[q.id].trim().toLowerCase()===r.trim().toLowerCase())t+=5});
   return t;
 }
 
-// ── LOCK ───────────────────────────────────────────────
+// ── VERROUILLAGE ──────────────────────────────────────
 function isEditable(m){
   if(m.homeScore!=null)return false;
   if(!m.date)return true;
   const [y,mo,d]=m.date.split('-').map(Number);
   const lk=new Date(y,mo-1,d-1);
-  const ls=lk.getFullYear()+'-'+S2(lk.getMonth()+1)+'-'+S2(lk.getDate());
-  return today()<ls;
+  return today()<lk.getFullYear()+'-'+S2(lk.getMonth()+1)+'-'+S2(lk.getDate());
 }
 function isBonusEditable(){
   const fd=getMatches().filter(m=>m.date).sort((a,b)=>a.date.localeCompare(b.date))[0]?.date;
   return !fd||today()<fd;
 }
 
-// ── AUTH ───────────────────────────────────────────────
-function onNameInput(){
-  const v=document.getElementById('li-name').value.trim().toLowerCase();
-  document.getElementById('li-admin-sec').style.display=v==='admin'?'block':'none';
-}
-function showSetup(){
-  document.getElementById('s-login').hidden=true;
-  document.getElementById('s-setup').hidden=false;
-}
+// ── AUTH ──────────────────────────────────────────────
+function onNameInput(){document.getElementById('li-admin-sec').style.display=document.getElementById('li-name').value.trim().toLowerCase()==='admin'?'block':'none'}
+function showSetup(){document.getElementById('s-login').hidden=true;document.getElementById('s-setup').hidden=false}
 
 async function doLogin(){
   hiErr('li-err');
   const name=document.getElementById('li-name').value.trim();
   if(!name){shErr('li-err','Veuillez saisir votre prénom.');return}
-
   if(name.toLowerCase()==='admin'){
-    const pwd=document.getElementById('li-pwd').value;
-    if(pwd===getSettings().adminPwd){
-      user={id:'admin',name:'Admin'};admin=true;enterApp();
-    }else{shErr('li-err','Mot de passe admin incorrect.')}
+    if(document.getElementById('li-pwd').value===getSettings().adminPwd){user={id:'admin',name:'Admin'};admin=true;enterApp()}
+    else shErr('li-err','Mot de passe incorrect.');
     return;
   }
   const ex=getParts().find(p=>p.name.toLowerCase()===name.toLowerCase());
   if(ex){user=ex;admin=false;enterApp();return}
   const id=genId();
-  await apiPatch('participants/'+id,{id,name});
-  if(!st.participants)st.participants={};
-  st.participants[id]={id,name};
-  user={id,name};admin=false;enterApp();
+  try{
+    await sbUpsert('participants',{id,name});
+    if(!st.participants)st.participants={};
+    st.participants[id]={id,name};
+    user={id,name};admin=false;enterApp();
+  }catch(e){shErr('li-err',e.message)}
 }
 
 function doLogout(){
-  user=null;admin=false;
-  if(sseSrc){try{sseSrc.close()}catch{}sseSrc=null}
+  stopPolling();user=null;admin=false;
   document.getElementById('app').hidden=true;
   document.getElementById('s-login').hidden=false;
   document.getElementById('li-name').value='';
@@ -461,34 +460,32 @@ function doLogout(){
 function enterApp(){
   document.getElementById('s-login').hidden=true;
   document.getElementById('app').hidden=false;
-  const ub=document.getElementById('u-badge');
-  if(admin){ub.innerHTML='<i class="ti ti-shield"></i> Admin';ub.className='badge b-admin'}
-  else{ub.textContent=user.name;ub.className='badge b-green'}
-  buildNav();
-  switchTab('classement');
-  setupSSE();
+  const b=document.getElementById('u-badge');
+  if(admin){b.innerHTML='<i class="ti ti-shield"></i> Admin';b.className='badge b-admin'}
+  else{b.textContent=user.name;b.className='badge b-green'}
+  buildNav();switchTab('classement');startPolling();
 }
 
-// ── SETUP ──────────────────────────────────────────────
+// ── SETUP ─────────────────────────────────────────────
 async function doSetup(){
   hiErr('su-err');
   const url=document.getElementById('su-url').value.trim();
+  const key=document.getElementById('su-key').value.trim();
   const pwd=document.getElementById('su-pwd').value;
-  const pwd2=document.getElementById('su-pwd2').value;
-  if(!url){shErr('su-err',"Veuillez saisir l'URL Firebase.");return}
-  if(!pwd){shErr('su-err','Veuillez saisir un mot de passe.');return}
-  if(pwd!==pwd2){shErr('su-err','Les mots de passe ne correspondent pas.');return}
+  if(!url||!key){shErr('su-err','URL et clé anon requises.');return}
+  if(!pwd){shErr('su-err','Mot de passe admin requis.');return}
   const btn=document.querySelector('#s-setup .btn-primary');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> Initialisation…';
   try{
-    const ok=await fbInit(url,pwd);
-    if(ok){toast('Base de données initialisée !','ok');document.getElementById('s-setup').hidden=true;document.getElementById('s-login').hidden=false}
-    else shErr('su-err','Erreur Firebase. Vérifiez l\'URL et les règles de sécurité.');
-  }catch(e){shErr('su-err','Erreur: '+e.message)}
+    await sbInit(url,key,pwd);
+    toast('Application initialisée !','ok');
+    document.getElementById('s-setup').hidden=true;
+    document.getElementById('s-login').hidden=false;
+  }catch(e){shErr('su-err',e.message)}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-rocket"></i> Initialiser l\'application';
 }
 
-// ── NAV ────────────────────────────────────────────────
+// ── NAV ───────────────────────────────────────────────
 const TABS=[
   {id:'classement',icon:'ti-trophy',label:'Classement'},
   {id:'mes-pronostics',icon:'ti-pencil',label:'Mes pronostics'},
@@ -502,110 +499,49 @@ const TABS=[
   {id:'settings',icon:'ti-adjustments',label:'Paramètres'},
   {id:'regles',icon:'ti-book',label:'Règles'}
 ];
-
 function buildNav(){
-  document.getElementById('nav').innerHTML=TABS
-    .filter(t=>!t.adminOnly||admin)
-    .map(t=>`<button class="ntab${t.id===tab?' active':''}" data-tab="${t.id}" onclick="switchTab('${t.id}')">
-      <i class="ti ${t.icon}"></i>${t.label}</button>`).join('');
+  document.getElementById('nav').innerHTML=TABS.filter(t=>!t.adminOnly||admin)
+    .map(t=>`<button class="ntab${t.id===tab?' active':''}" data-tab="${t.id}" onclick="switchTab('${t.id}')"><i class="ti ${t.icon}"></i>${t.label}</button>`).join('');
 }
-
-function switchTab(id){
-  tab=id;
-  document.querySelectorAll('.ntab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
-  renderTab();
-}
-
+function switchTab(id){tab=id;document.querySelectorAll('.ntab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));renderTab()}
 function renderTab(){
   const c=document.getElementById('content');if(!c)return;
-  const fn={
-    'classement':rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,
-    'tous-pronostics':rTousProns,'resultats':rResultats,'dashboard':rDashboard,
-    'participants':rParts,'matches':rMatches,'bonus-results':rBonusResults,
-    'settings':rSettings,'regles':rRegles
-  };
-  c.innerHTML=(fn[tab]||rClassement)();
+  ({classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,participants:rParts,matches:rMatches,'bonus-results':rBonusResults,settings:rSettings,regles:rRegles}[tab]||rClassement)();
+  // call render fn and assign html
+  c.innerHTML=({classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,participants:rParts,matches:rMatches,'bonus-results':rBonusResults,settings:rSettings,regles:rRegles}[tab]||rClassement)();
 }
 
-// ── CLASSEMENT ─────────────────────────────────────────
+// ── CLASSEMENT ────────────────────────────────────────
 function rClassement(){
-  const parts=getParts();
-  const ranked=parts.map(p=>({...p,pts:calcTotal(p.id),
-    played:getMatches().filter(m=>m.homeScore!=null&&getProns()[p.id+'_'+m.id]&&getProns()[p.id+'_'+m.id].homeScore!=null).length
-  })).sort((a,b)=>b.pts-a.pts||(a.name.localeCompare(b.name)));
-
+  const ranked=getParts().map(p=>({...p,pts:calcTotal(p.id),played:getMatches().filter(m=>m.homeScore!=null&&getProns()[p.id+'_'+m.id]?.homeScore!=null).length}))
+    .sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name));
   const rows=ranked.map((p,i)=>{
     const r=i+1,me=user&&p.id===user.id;
     const rb=r===1?`<span class="rnk r1">🥇</span>`:r===2?`<span class="rnk r2">🥈</span>`:r===3?`<span class="rnk r3">🥉</span>`:`<span class="rnk rx">${r}</span>`;
-    return `<tr class="${me?'me':''}">
-      <td>${rb}</td>
-      <td>${esc(p.name)}${me?' <span class="badge b-live" style="font-size:.62rem">Vous</span>':''}</td>
-      <td><strong style="color:var(--green);font-size:1.05rem">${p.pts}</strong></td>
-      <td style="color:var(--muted)">${p.played}</td>
-    </tr>`;
+    return`<tr class="${me?'me':''}"><td>${rb}</td><td>${esc(p.name)}${me?' <span class="badge b-live" style="font-size:.62rem">Vous</span>':''}</td><td><strong style="color:var(--green);font-size:1.05rem">${p.pts}</strong></td><td style="color:var(--muted)">${p.played}</td></tr>`;
   }).join('');
-
-  return `<div class="card">
-    <div class="card-hdr"><div class="card-title"><i class="ti ti-trophy"></i> Classement général</div>
-    <span style="color:var(--muted);font-size:.8rem">${ranked.length} participants</span></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Participant</th><th>Points</th><th>Matchs</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div></div>`;
+  return`<div class="card"><div class="card-hdr"><div class="card-title"><i class="ti ti-trophy"></i> Classement général</div><span style="color:var(--muted);font-size:.8rem">${ranked.length} participants · synchro toutes les ${POLL_MS/1000}s</span></div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Participant</th><th>Points</th><th>Matchs joués</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 
-// ── MES PRONOSTICS ─────────────────────────────────────
+// ── MES PRONOSTICS ────────────────────────────────────
 function rMesProns(){
   if(!user)return'';
-  const matches=getMatches(), prons=getProns();
-  const order=['Groupe A','Groupe B','Groupe C','Groupe D','Groupe E','Groupe F',
-    'Groupe G','Groupe H','Groupe I','Groupe J','Groupe K','Groupe L',
-    '16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
   const grouped={};
-  matches.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-
-  let html=`<div class="card" style="margin-bottom:12px">
-    <div class="card-hdr"><div class="card-title"><i class="ti ti-pencil"></i> Mes pronostics</div>
-    <small style="color:var(--muted)">Verrouillé 1 jour avant chaque match</small></div>
-    <p style="font-size:.8rem;color:var(--muted)">Les scores sont sauvegardés automatiquement dès que vous renseignez les deux équipes.</p>
-  </div>`;
-
-  (order.filter(ph=>grouped[ph])||[]).forEach(phase=>{
+  getMatches().forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+  let html=`<div class="card"><div class="card-hdr"><div class="card-title"><i class="ti ti-pencil"></i> Mes pronostics</div><small style="color:var(--muted)">Verrouillé 1 jour avant chaque match</small></div></div>`;
+  PHASES.filter(ph=>grouped[ph]).forEach(phase=>{
     html+=`<div class="ph"><i class="ti ti-circle-filled" style="font-size:.45rem"></i>${esc(phase)}</div>`;
     grouped[phase].forEach(m=>{
-      const key=user.id+'_'+m.id, p=prons[key]||{}, ed=isEditable(m), has=m.homeScore!=null;
+      const key=user.id+'_'+m.id,p=getProns()[key]||{},ed=isEditable(m),has=m.homeScore!=null;
       const pts=has?calcPts(p,m):null;
-      const ptsCls=pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
-      const ptsHtml=pts!==null?`<span class="${ptsCls}" style="font-size:.8rem">${pts}pt${pts>1?'s':''}</span>`:'';
-      const realHtml=has?`<span style="font-size:.7rem;color:var(--muted)">(${m.homeScore}-${m.awayScore})</span>`:'';
-
+      const pc=pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
+      const ph2=pts!==null?`<span class="${pc}" style="font-size:.8rem">${pts}pt${pts>1?'s':''}</span>`:'';
+      const rh=has?`<span style="font-size:.7rem;color:var(--muted)">(${m.homeScore}-${m.awayScore})</span>`:'';
       if(ed){
-        html+=`<div class="mrow">
-          <div class="mteams">
-            <div class="name">${esc(m.home)} <span style="color:var(--muted)">vs</span> ${esc(m.away)}</div>
-            <div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div>
-          </div>
-          <div class="si">
-            <input type="number" min="0" max="20" value="${p.homeScore??''}" placeholder="?"
-              onchange="savePron('${user.id}','${m.id}','home',this.value)" style="width:48px">
-            <span class="sep">–</span>
-            <input type="number" min="0" max="20" value="${p.awayScore??''}" placeholder="?"
-              onchange="savePron('${user.id}','${m.id}','away',this.value)" style="width:48px">
-          </div>
-          ${ptsHtml}
-        </div>`;
+        html+=`<div class="mrow"><div class="mteams"><div class="name">${esc(m.home)} <span style="color:var(--muted)">vs</span> ${esc(m.away)}</div><div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div></div><div class="si"><input type="number" min="0" max="20" value="${p.homeScore??''}" placeholder="?" onchange="savePron('${user.id}','${m.id}','home',this.value)" style="width:48px"><span class="sep">–</span><input type="number" min="0" max="20" value="${p.awayScore??''}" placeholder="?" onchange="savePron('${user.id}','${m.id}','away',this.value)" style="width:48px"></div>${ph2}</div>`;
       }else{
-        const mysc=p.homeScore!=null?`<strong>${p.homeScore}–${p.awayScore}</strong>`:`<em style="color:var(--muted)">–</em>`;
-        html+=`<div class="mrow locked">
-          <div class="mteams">
-            <div class="name">${esc(m.home)} vs ${esc(m.away)}</div>
-            <div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div>
-          </div>
-          <div style="text-align:right;display:flex;align-items:center;gap:8px">
-            <span class="mscore">${mysc}</span>${realHtml}${ptsHtml}
-          </div>
-          <i class="ti ti-lock" style="color:var(--muted);font-size:.9rem"></i>
-        </div>`;
+        const sc=p.homeScore!=null?`<strong>${p.homeScore}–${p.awayScore}</strong>`:`<em style="color:var(--muted)">–</em>`;
+        html+=`<div class="mrow locked"><div class="mteams"><div class="name">${esc(m.home)} vs ${esc(m.away)}</div><div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="mscore">${sc}</span>${rh}${ph2}</div><i class="ti ti-lock" style="color:var(--muted)"></i></div>`;
       }
     });
   });
@@ -620,36 +556,23 @@ async function savePron(pid,mid,side,val){
   upd[side+'Score']=val===''?null:+val;
   st.pronostics[key]=upd;
   if(upd.homeScore!=null&&upd.awayScore!=null){
-    await apiPatch('pronostics/'+key,upd);
-    toast('Pronostic sauvegardé ✓','ok');
+    try{
+      await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
+      toast('Pronostic sauvegardé ✓','ok');
+    }catch(e){toast(e.message,'ko')}
   }
 }
 
 // ── MES BONUS ─────────────────────────────────────────
 function rMesBonus(){
   if(!user)return'';
-  const bq=getBQ(), bd=getBonus(), my=bd[user.id]||{}, ed=isBonusEditable();
-  let html=`<div class="card">
-    <div class="card-hdr">
-      <div class="card-title"><i class="ti ti-star"></i> Mes bonus</div>
-      ${ed?'<span class="badge b-live">Ouvert</span>':'<span class="badge b-red"><i class="ti ti-lock"></i> Verrouillé</span>'}
-    </div>
-    ${!ed?'<p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Les bonus sont verrouillés depuis le début du tournoi.</p>':''}
-  `;
-  bq.forEach(q=>{
+  const my=(getBonus()[user.id]||{}),ed=isBonusEditable();
+  let html=`<div class="card"><div class="card-hdr"><div class="card-title"><i class="ti ti-star"></i> Mes bonus</div>${ed?'<span class="badge b-live">Ouvert</span>':'<span class="badge b-red"><i class="ti ti-lock"></i> Verrouillé</span>'}</div>${!ed?'<p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Bonus verrouillés depuis le début du tournoi.</p>':''}`;
+  SBQ.forEach(q=>{
     const v=esc(my[q.id]||'');
-    html+=`<div class="bonus-box">
-      <label style="font-weight:600;margin-bottom:8px">${esc(q.label)}</label>
-      ${ed
-        ?`<input type="text" value="${v}" placeholder="Votre réponse…"
-            onblur="saveBonus('${q.id}',this.value)"
-            onkeydown="if(event.key==='Enter')saveBonus('${q.id}',this.value)">`
-        :`<div style="padding:9px;background:var(--bg);border-radius:7px;color:${my[q.id]?'var(--text)':'var(--muted)'}">${my[q.id]||'<em>Non renseigné</em>'}</div>`
-      }
-    </div>`;
+    html+=`<div class="bonus-box"><label style="font-weight:600;margin-bottom:8px">${esc(q.label)}</label>${ed?`<input type="text" value="${v}" placeholder="Votre réponse…" onblur="saveBonus('${q.id}',this.value)" onkeydown="if(event.key==='Enter')saveBonus('${q.id}',this.value)">`:`<div style="padding:9px;background:var(--bg);border-radius:7px;color:${my[q.id]?'var(--text)':'var(--muted)'}">${my[q.id]||'<em>Non renseigné</em>'}</div>`}</div>`;
   });
-  html+='</div>';
-  return html;
+  return html+'</div>';
 }
 
 async function saveBonus(qid,val){
@@ -657,131 +580,76 @@ async function saveBonus(qid,val){
   if(!st.bonus)st.bonus={};
   if(!st.bonus[user.id])st.bonus[user.id]={};
   st.bonus[user.id][qid]=val;
-  await apiPatch('bonus/'+user.id,st.bonus[user.id]);
-  toast('Bonus sauvegardé ✓','ok');
+  try{
+    await sbUpsert('bonus',{id:user.id+'_'+qid,participantid:user.id,questionid:qid,answer:val});
+    toast('Bonus sauvegardé ✓','ok');
+  }catch(e){toast(e.message,'ko')}
 }
 
-// ── TOUS PRONOSTICS ────────────────────────────────────
+// ── TOUS PRONOSTICS ───────────────────────────────────
 function rTousProns(){
   const parts=getParts().sort((a,b)=>a.name.localeCompare(b.name));
   const played=getMatches().filter(m=>!isEditable(m));
   if(!played.length)return`<div class="card"><div class="empty"><i class="ti ti-clock" style="font-size:2rem;display:block;margin-bottom:8px"></i>Aucun pronostic verrouillé pour l'instant.</div></div>`;
   const prons=getProns();
-
-  let html=`<div class="card">
-    <div class="card-title" style="margin-bottom:14px"><i class="ti ti-table"></i> Pronostics — matchs verrouillés (${played.length})</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Match</th><th>Réel</th>${parts.map(p=>`<th style="white-space:nowrap">${esc(p.name)}</th>`).join('')}</tr></thead>
-      <tbody>`;
-
+  let html=`<div class="card"><div class="card-title" style="margin-bottom:14px"><i class="ti ti-table"></i> Pronostics — matchs verrouillés (${played.length})</div><div class="tbl-wrap"><table><thead><tr><th>Match</th><th>Réel</th>${parts.map(p=>`<th style="white-space:nowrap">${esc(p.name)}</th>`).join('')}</tr></thead><tbody>`;
   played.forEach(m=>{
     const has=m.homeScore!=null;
-    html+=`<tr>
-      <td><div style="font-weight:500;font-size:.82rem">${esc(m.home)} vs ${esc(m.away)}</div>
-          <div style="color:var(--muted);font-size:.7rem">${m.date} · ${esc(m.phase)}</div></td>
-      <td>${has?`<strong>${m.homeScore}–${m.awayScore}</strong>`:'<span style="color:var(--muted)">–</span>'}</td>`;
+    html+=`<tr><td><div style="font-weight:500;font-size:.82rem">${esc(m.home)} vs ${esc(m.away)}</div><div style="color:var(--muted);font-size:.7rem">${m.date} · ${esc(m.phase)}</div></td><td>${has?`<strong>${m.homeScore}–${m.awayScore}</strong>`:'–'}</td>`;
     parts.forEach(p=>{
-      const k=p.id+'_'+m.id, pr=prons[k];
+      const k=p.id+'_'+m.id,pr=prons[k];
       if(!pr||pr.homeScore==null){html+=`<td style="color:var(--muted)">–</td>`;return}
-      if(has){const pts=calcPts(pr,m);const cl=pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
-        html+=`<td><span class="${cl}">${pr.homeScore}–${pr.awayScore}</span></td>`}
-      else{html+=`<td>${pr.homeScore}–${pr.awayScore}</td>`}
+      if(has){const pts=calcPts(pr,m);html+=`<td><span class="${pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0'}">${pr.homeScore}–${pr.awayScore}</span></td>`}
+      else html+=`<td>${pr.homeScore}–${pr.awayScore}</td>`;
     });
     html+='</tr>';
   });
-  html+=`</tbody></table></div></div>`;
-  return html;
+  return html+'</tbody></table></div></div>';
 }
 
-// ── RÉSULTATS ──────────────────────────────────────────
-function calcGroupStandings(){
-  const groups={};
+// ── RÉSULTATS ─────────────────────────────────────────
+function calcGroups(){
+  const g={};
   getMatches().filter(m=>/^Groupe [A-L]$/.test(m.phase)).forEach(m=>{
-    if(!groups[m.phase])groups[m.phase]={};
-    [m.home,m.away].forEach(t=>{if(!groups[m.phase][t])groups[m.phase][t]={name:t,mj:0,g:0,n:0,p:0,bp:0,bc:0,pts:0}});
-    if(m.homeScore!=null&&m.awayScore!=null){
-      const h=+m.homeScore,a=+m.awayScore,ht=groups[m.phase][m.home],at=groups[m.phase][m.away];
+    if(!g[m.phase])g[m.phase]={};
+    [m.home,m.away].forEach(t=>{if(!g[m.phase][t])g[m.phase][t]={name:t,mj:0,g:0,n:0,p:0,bp:0,bc:0,pts:0}});
+    if(m.homeScore!=null){
+      const h=+m.homeScore,a=+m.awayScore,ht=g[m.phase][m.home],at=g[m.phase][m.away];
       ht.mj++;ht.bp+=h;ht.bc+=a;at.mj++;at.bp+=a;at.bc+=h;
       if(h>a){ht.g++;ht.pts+=3;at.p++}else if(h<a){at.g++;at.pts+=3;ht.p++}else{ht.n++;ht.pts++;at.n++;at.pts++}
     }
   });
-  Object.keys(groups).forEach(g=>{
-    groups[g]=Object.values(groups[g]).sort((a,b)=>b.pts-a.pts||(b.bp-b.bc)-(a.bp-a.bc)||b.bp-a.bp);
-  });
-  return groups;
+  Object.keys(g).forEach(k=>{g[k]=Object.values(g[k]).sort((a,b)=>b.pts-a.pts||(b.bp-b.bc)-(a.bp-a.bc)||b.bp-a.bp)});
+  return g;
 }
 
 function rResultats(){
-  const groups=calcGroupStandings();
-  const gnames=Object.keys(groups).sort();
+  const groups=calcGroups();
   let html=`<h2 class="sec-title"><i class="ti ti-list-details"></i> Classements de groupe</h2><div class="gg">`;
-
-  gnames.forEach(g=>{
-    const teams=groups[g];
-    html+=`<div class="card" style="margin-bottom:0">
-      <div class="card-title" style="margin-bottom:10px">${esc(g)}</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>DB</th><th>Pts</th></tr></thead>
-        <tbody>`;
-    teams.forEach((t,i)=>html+=`<tr class="${i<2?'qual':''}">
-      <td>${i+1}</td><td style="font-weight:${i<2?600:400}">${esc(t.name)}</td>
-      <td>${t.mj}</td><td>${t.g}</td><td>${t.n}</td><td>${t.p}</td>
-      <td>${t.bp}</td><td>${t.bc}</td><td>${t.bp-t.bc}</td><td><strong>${t.pts}</strong></td>
-    </tr>`);
+  Object.keys(groups).sort().forEach(gn=>{
+    html+=`<div class="card" style="margin-bottom:0"><div class="card-title" style="margin-bottom:10px">${esc(gn)}</div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>DB</th><th>Pts</th></tr></thead><tbody>`;
+    groups[gn].forEach((t,i)=>html+=`<tr class="${i<2?'qual':''}"><td>${i+1}</td><td style="font-weight:${i<2?600:400}">${esc(t.name)}</td><td>${t.mj}</td><td>${t.g}</td><td>${t.n}</td><td>${t.p}</td><td>${t.bp}</td><td>${t.bc}</td><td>${t.bp-t.bc}</td><td><strong>${t.pts}</strong></td></tr>`);
     html+=`</tbody></table></div></div>`;
   });
   html+='</div>';
-
-  const fphases=['16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
-  html+=`<h2 class="sec-title" style="margin-top:22px"><i class="ti ti-tournament"></i> Phases finales</h2>`;
-  fphases.forEach(ph=>{
-    const ms=getMatches().filter(m=>m.phase===ph);
-    if(!ms.length)return;
-    html+=`<div class="ph">${esc(ph)}</div>`;
-    ms.forEach(m=>{
-      const hs=m.homeScore!=null;
-      html+=`<div class="bk">
-        <div class="bk-teams">
-          <span style="font-weight:500">${esc(m.home)}</span>
-          <span class="bk-score">${hs?m.homeScore+' – '+m.awayScore:'vs'}</span>
-          <span style="font-weight:500">${esc(m.away)}</span>
-        </div>
-        <div class="bk-meta">${m.date} ${m.time} · ${esc(m.venue)}</div>
-      </div>`;
-    });
+  ['16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'].forEach(ph=>{
+    const ms=getMatches().filter(m=>m.phase===ph);if(!ms.length)return;
+    html+=`<div class="ph" style="margin-top:16px">${esc(ph)}</div>`;
+    ms.forEach(m=>{const hs=m.homeScore!=null;html+=`<div class="bk"><div class="bkt"><span style="font-weight:500">${esc(m.home)}</span><span class="bks">${hs?m.homeScore+' – '+m.awayScore:'vs'}</span><span style="font-weight:500">${esc(m.away)}</span></div><div class="bkm">${m.date} ${m.time} · ${esc(m.venue)}</div></div>`});
   });
   return html;
 }
 
-// ── DASHBOARD ADMIN ────────────────────────────────────
+// ── DASHBOARD ADMIN ───────────────────────────────────
 function rDashboard(){
   if(!admin)return'<div class="card"><p>Accès réservé à l\'administrateur.</p></div>';
-  const matches=getMatches();
-  const order=['Groupe A','Groupe B','Groupe C','Groupe D','Groupe E','Groupe F',
-    'Groupe G','Groupe H','Groupe I','Groupe J','Groupe K','Groupe L',
-    '16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
   const grouped={};
-  matches.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-
-  let html=`<div class="card"><div class="card-title"><i class="ti ti-settings-2"></i> Saisie des scores réels</div>
-    <p style="color:var(--muted);font-size:.82rem;margin-top:6px">Saisissez les scores puis cliquez sur <i class="ti ti-check"></i>.</p></div>`;
-
-  order.filter(ph=>grouped[ph]).forEach(phase=>{
+  getMatches().forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+  let html=`<div class="card"><div class="card-title"><i class="ti ti-settings-2"></i> Saisie des scores réels</div><p style="color:var(--muted);font-size:.82rem;margin-top:6px">Saisissez les scores puis cliquez sur ✓.</p></div>`;
+  PHASES.filter(ph=>grouped[ph]).forEach(phase=>{
     html+=`<div class="ph">${esc(phase)}</div>`;
     grouped[phase].forEach(m=>{
-      html+=`<div class="mrow" style="gap:8px">
-        <div class="mteams">
-          <div class="name">${esc(m.home)} vs ${esc(m.away)}</div>
-          <div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div>
-        </div>
-        <div class="si">
-          <input type="number" min="0" max="20" value="${m.homeScore??''}" placeholder="?" id="ah-${m.id}" style="width:46px">
-          <span class="sep">–</span>
-          <input type="number" min="0" max="20" value="${m.awayScore??''}" placeholder="?" id="aa-${m.id}" style="width:46px">
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="adminSave('${m.id}')"><i class="ti ti-check"></i></button>
-        ${m.homeScore!=null?`<button class="btn btn-danger btn-sm" onclick="adminClear('${m.id}')" title="Effacer"><i class="ti ti-x"></i></button>`:''}
-      </div>`;
+      html+=`<div class="mrow"><div class="mteams"><div class="name">${esc(m.home)} vs ${esc(m.away)}</div><div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div></div><div class="si"><input type="number" min="0" max="20" value="${m.homeScore??''}" placeholder="?" id="ah-${m.id}" style="width:46px"><span class="sep">–</span><input type="number" min="0" max="20" value="${m.awayScore??''}" placeholder="?" id="aa-${m.id}" style="width:46px"></div><button class="btn btn-primary btn-sm" onclick="adminSave('${m.id}')"><i class="ti ti-check"></i></button>${m.homeScore!=null?`<button class="btn btn-danger btn-sm" onclick="adminClear('${m.id}')"><i class="ti ti-x"></i></button>`:''}</div>`;
     });
   });
   return html;
@@ -790,217 +658,151 @@ function rDashboard(){
 async function adminSave(mid){
   const h=document.getElementById('ah-'+mid)?.value;
   const a=document.getElementById('aa-'+mid)?.value;
-  if(h===''||a===''){toast('Saisissez les deux scores','err2');return}
-  const ok=await apiPatch('matches/'+mid,{homeScore:+h,awayScore:+a});
-  if(ok){
-    if(!st.matches)st.matches={};
-    if(!st.matches[mid])st.matches[mid]={};
-    st.matches[mid].homeScore=+h;st.matches[mid].awayScore=+a;
+  if(h===''||a===''){toast('Saisissez les deux scores','ko');return}
+  try{
+    await sbPatch('matches',mid,{homescore:+h,awayscore:+a});
+    if(st.matches?.[mid]){st.matches[mid].homeScore=+h;st.matches[mid].awayScore=+a}
     toast('Score sauvegardé ✓','ok');
-  }else toast('Erreur Firebase','err2');
+  }catch(e){toast(e.message,'ko')}
 }
 
 async function adminClear(mid){
   if(!confirm('Effacer ce score ?'))return;
-  const ok=await apiPatch('matches/'+mid,{homeScore:null,awayScore:null});
-  if(ok){
-    if(st.matches&&st.matches[mid]){st.matches[mid].homeScore=null;st.matches[mid].awayScore=null}
+  try{
+    await sbPatch('matches',mid,{homescore:null,awayscore:null});
+    if(st.matches?.[mid]){st.matches[mid].homeScore=null;st.matches[mid].awayScore=null}
     toast('Score effacé','ok');renderTab();
-  }else toast('Erreur','err2');
+  }catch(e){toast(e.message,'ko')}
 }
 
-// ── PARTICIPANTS ───────────────────────────────────────
+// ── PARTICIPANTS ──────────────────────────────────────
 function rParts(){
   const parts=getParts().sort((a,b)=>a.name.localeCompare(b.name));
-  const rows=parts.map(p=>`<tr>
-    <td>${esc(p.name)}</td>
-    <td style="color:var(--muted);font-size:.78rem">${esc(p.id)}</td>
-    <td><strong>${calcTotal(p.id)}</strong> pts</td>
-  </tr>`).join('');
-  return`<div class="card">
-    <div class="card-title"><i class="ti ti-users"></i> Participants (${parts.length})</div>
-    <div class="tbl-wrap" style="margin-top:14px"><table>
-      <thead><tr><th>Nom</th><th>ID</th><th>Points</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div></div>`;
+  return`<div class="card"><div class="card-title"><i class="ti ti-users"></i> Participants (${parts.length})</div><div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Nom</th><th>ID</th><th>Points</th></tr></thead><tbody>${parts.map(p=>`<tr><td>${esc(p.name)}</td><td style="color:var(--muted);font-size:.78rem">${esc(p.id)}</td><td><strong>${calcTotal(p.id)}</strong> pts</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
-// ── MATCHS ─────────────────────────────────────────────
+// ── MATCHS ────────────────────────────────────────────
 function rMatches(){
-  const matches=getMatches();
-  const order=['Groupe A','Groupe B','Groupe C','Groupe D','Groupe E','Groupe F',
-    'Groupe G','Groupe H','Groupe I','Groupe J','Groupe K','Groupe L',
-    '16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
   const grouped={};
-  matches.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-  let html=`<div class="card"><div class="card-title"><i class="ti ti-calendar"></i> Tous les matchs (${matches.length})</div></div>`;
-  order.filter(ph=>grouped[ph]).forEach(phase=>{
+  getMatches().forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+  let html=`<div class="card"><div class="card-title"><i class="ti ti-calendar"></i> Tous les matchs (${getMatches().length})</div></div>`;
+  PHASES.filter(ph=>grouped[ph]).forEach(phase=>{
     html+=`<div class="ph">${esc(phase)}</div>`;
-    grouped[phase].forEach(m=>{
-      const hs=m.homeScore!=null;
-      html+=`<div class="mrow${hs?' locked':''}">
-        <div class="mteams">
-          <div class="name">${esc(m.home)} vs ${esc(m.away)}</div>
-          <div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div>
-        </div>
-        ${hs?`<span class="mscore">${m.homeScore} – ${m.awayScore}</span>`:'<span style="color:var(--muted);font-size:.8rem">À jouer</span>'}
-      </div>`;
-    });
+    grouped[phase].forEach(m=>{const hs=m.homeScore!=null;html+=`<div class="mrow${hs?' locked':''}"><div class="mteams"><div class="name">${esc(m.home)} vs ${esc(m.away)}</div><div class="mmeta">${m.date} ${m.time} · ${esc(m.venue)}</div></div>${hs?`<span class="mscore">${m.homeScore} – ${m.awayScore}</span>`:'<span style="color:var(--muted);font-size:.8rem">À jouer</span>'}</div>`});
   });
   return html;
 }
 
-// ── BONUS RESULTS ──────────────────────────────────────
+// ── BONUS RESULTS ─────────────────────────────────────
 function rBonusResults(){
-  const bq=getBQ(), bd=getBonus(), br=getBR();
+  const bd=getBonus(),br=getBR();
   const parts=getParts().sort((a,b)=>a.name.localeCompare(b.name));
-  let html=`<div class="card">
-    <div class="card-title"><i class="ti ti-star-filled"></i> Résultats bonus</div>`;
-
+  let html=`<div class="card"><div class="card-title"><i class="ti ti-star-filled"></i> Résultats bonus</div>`;
   if(admin){
-    html+=`<p style="color:var(--muted);font-size:.82rem;margin:8px 0 14px">Saisissez les réponses correctes pour attribuer les points bonus.</p>`;
-    bq.forEach(q=>{
-      html+=`<div class="bonus-box">
-        <label style="font-weight:600">${esc(q.label)}</label>
-        <div style="display:flex;gap:8px;margin-top:7px">
-          <input type="text" id="br-${q.id}" value="${esc(br[q.id]||'')}" placeholder="Réponse correcte…" style="flex:1">
-          <button class="btn btn-primary btn-sm" onclick="saveBR('${q.id}')"><i class="ti ti-check"></i> Valider</button>
-        </div>
-      </div>`;
-    });
+    html+=`<p style="color:var(--muted);font-size:.82rem;margin:8px 0 14px">Saisissez les réponses correctes pour attribuer les points.</p>`;
+    SBQ.forEach(q=>{html+=`<div class="bonus-box"><label style="font-weight:600">${esc(q.label)}</label><div style="display:flex;gap:8px;margin-top:7px"><input type="text" id="br-${q.id}" value="${esc(br[q.id]||'')}" placeholder="Réponse correcte…" style="flex:1"><button class="btn btn-primary btn-sm" onclick="saveBR('${q.id}')"><i class="ti ti-check"></i> Valider</button></div></div>`});
     html+='<hr class="div">';
   }
-
-  html+=`<h3 style="font-size:.875rem;font-weight:600;margin-bottom:10px;color:var(--muted)">Réponses des participants</h3>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Participant</th>${bq.map(q=>`<th>${esc(q.label)}</th>`).join('')}<th>Pts bonus</th></tr></thead>
-      <tbody>`;
-
+  html+=`<h3 style="font-size:.875rem;font-weight:600;margin-bottom:10px;color:var(--muted)">Réponses des participants</h3><div class="tbl-wrap"><table><thead><tr><th>Participant</th>${SBQ.map(q=>`<th>${esc(q.label)}</th>`).join('')}<th>Pts bonus</th></tr></thead><tbody>`;
   parts.forEach(p=>{
-    const ub=bd[p.id]||{};
-    let bpts=0;
-    const cells=bq.map(q=>{
-      const ans=ub[q.id]||'';
-      const r=br[q.id];
-      let st2='color:var(--muted)';
-      if(r&&ans){
-        const match=ans.trim().toLowerCase()===r.trim().toLowerCase();
-        if(match){st2='color:#16a34a;font-weight:600';bpts+=5}else st2='color:#dc2626';
-      }
-      return`<td style="${st2}">${esc(ans)||'–'}</td>`;
+    const ub=bd[p.id]||{};let bpts=0;
+    const cells=SBQ.map(q=>{
+      const ans=ub[q.id]||'',r=br[q.id];
+      let s='color:var(--muted)';
+      if(r&&ans){const ok=ans.trim().toLowerCase()===r.trim().toLowerCase();if(ok){s='color:#16a34a;font-weight:600';bpts+=5}else s='color:#dc2626'}
+      return`<td style="${s}">${esc(ans)||'–'}</td>`;
     }).join('');
     html+=`<tr><td>${esc(p.name)}</td>${cells}<td><strong>${bpts}</strong></td></tr>`;
   });
-  html+=`</tbody></table></div></div>`;
-  return html;
+  return html+'</tbody></table></div></div>';
 }
 
 async function saveBR(qid){
   const val=document.getElementById('br-'+qid)?.value.trim()||'';
   if(!st.bonusResults)st.bonusResults={};
   st.bonusResults[qid]=val;
-  const ok=await apiPut('bonusResults/'+qid,val);
-  if(ok)toast('Résultat bonus sauvegardé ✓','ok');
-  else toast('Erreur Firebase','err2');
+  try{await sbUpsert('bonus_results',{id:qid,answer:val});toast('Résultat sauvegardé ✓','ok')}
+  catch(e){toast(e.message,'ko')}
 }
 
-// ── SETTINGS ───────────────────────────────────────────
+// ── SETTINGS ──────────────────────────────────────────
 function rSettings(){
-  return`<div class="card">
-    <div class="card-title"><i class="ti ti-adjustments"></i> Paramètres</div>
-    <div class="fg" style="margin-top:14px"><label>URL Firebase actuelle</label>
-      <input type="text" id="s-url" value="${esc(DB)}"></div>
-    ${admin?`<div class="fg"><label>Nouveau mot de passe admin</label>
-      <input type="password" id="s-pwd" placeholder="Laisser vide pour ne pas changer"></div>
-      <button class="btn btn-primary" onclick="doSaveSettings()" style="max-width:200px"><i class="ti ti-check"></i> Sauvegarder</button>`:''}
+  return`<div class="card"><div class="card-title"><i class="ti ti-adjustments"></i> Paramètres</div>
+    <div class="fg" style="margin-top:14px"><label>Supabase URL</label><input type="text" id="s-url" value="${esc(SB_URL)}"></div>
+    <div class="fg"><label>Anon key</label><input type="text" id="s-key" value="${esc(SB_KEY)}"></div>
+    ${admin?`<div class="fg"><label>Nouveau mot de passe admin</label><input type="password" id="s-pwd" placeholder="Laisser vide pour ne pas changer"></div><button class="btn btn-primary" style="max-width:220px" onclick="doSaveSettings()"><i class="ti ti-check"></i> Sauvegarder</button>`:''}
   </div>
-  <div class="card">
-    <div class="card-title"><i class="ti ti-info-circle"></i> Informations</div>
-    <p style="font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.7">
-      <strong>Firebase :</strong> ${esc(DB)}<br>
-      <strong>Utilisateur :</strong> ${esc(user?.name||'—')}<br>
-      <strong>Mode :</strong> ${admin?'Administrateur':'Participant'}<br>
+  <div class="card"><div class="card-title"><i class="ti ti-info-circle"></i> Infos</div>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.8">
+      <strong>Backend :</strong> Supabase (PostgreSQL) — données sécurisées, backups quotidiens<br>
+      <strong>Utilisateur :</strong> ${esc(user?.name||'—')} · <strong>Mode :</strong> ${admin?'Administrateur':'Participant'}<br>
       <strong>Matchs :</strong> ${getMatches().length} · <strong>Participants :</strong> ${getParts().length}
     </p>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" onclick="copyLink()"><i class="ti ti-copy"></i> Copier le lien</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyLink()"><i class="ti ti-copy"></i> Copier le lien de partage</button>
       <button class="btn btn-ghost btn-sm" onclick="forceRefresh()"><i class="ti ti-refresh"></i> Rafraîchir</button>
     </div>
   </div>`;
 }
-
 function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>toast('Lien copié ✓','ok'))}
-async function forceRefresh(){
-  const data=await fbRead();
-  if(data){st=data;toast('Données rechargées','ok');renderTab()}else toast('Erreur Firebase','err2');
-}
-
+async function forceRefresh(){try{st=await sbReadAll();toast('Données rechargées ✓','ok');renderTab()}catch(e){toast(e.message,'ko')}}
 async function doSaveSettings(){
   const url=document.getElementById('s-url')?.value.trim();
+  const key=document.getElementById('s-key')?.value.trim();
   const pwd=document.getElementById('s-pwd')?.value;
-  if(url&&url!==DB){
-    DB=url;window.location.hash=btoa(JSON.stringify({dbUrl:DB}));
-  }
-  if(pwd&&admin){
-    await apiPut('settings/adminPwd',pwd);
-    if(st.settings)st.settings.adminPwd=pwd;
-    toast('Mot de passe mis à jour ✓','ok');
-  }else toast('Paramètres sauvegardés ✓','ok');
+  if(url)SB_URL=url;if(key)SB_KEY=key;
+  window.location.hash=btoa(JSON.stringify({url:SB_URL,key:SB_KEY}));
+  if(pwd&&admin){try{await sbUpsert('settings',{key:'adminpwd',value:pwd});toast('Mot de passe mis à jour ✓','ok')}catch(e){toast(e.message,'ko')}}
+  else toast('Paramètres sauvegardés ✓','ok');
 }
 
-// ── RÈGLES ─────────────────────────────────────────────
+// ── RÈGLES ────────────────────────────────────────────
 function rRegles(){
-  return`<div class="card">
-    <div class="card-title"><i class="ti ti-book"></i> Règles du jeu</div>
-    <div style="margin-top:14px;line-height:1.75">
-      <h3 style="color:var(--green);margin-bottom:8px">Système de points</h3>
-      <div class="tbl-wrap"><table style="margin-bottom:14px">
-        <thead><tr><th>Résultat</th><th>Points</th></tr></thead>
-        <tbody>
-          <tr><td>✅ Score exact</td><td><strong class="p3">3 pts</strong></td></tr>
-          <tr><td>🎯 Bonne équipe + différence de buts correcte</td><td><strong class="p2">2 pts</strong></td></tr>
-          <tr><td>👍 Bonne équipe gagnante</td><td><strong class="p1">1 pt</strong></td></tr>
-          <tr><td>🤝 Nul prédit et nul réel</td><td><strong class="p1">1 pt</strong></td></tr>
-          <tr><td>❌ Mauvais pronostic</td><td><strong class="p0">0 pt</strong></td></tr>
-        </tbody>
-      </table></div>
-      <h3 style="color:var(--green);margin-bottom:8px">Bonus</h3>
-      <p>Chaque bonne réponse bonus rapporte <strong>5 points</strong>.</p>
-      <hr class="div">
-      <h3 style="color:var(--green);margin-bottom:8px">Verrouillage</h3>
-      <ul style="margin-left:16px;margin-top:6px">
-        <li>Pronostics verrouillés <strong>1 jour avant</strong> chaque match.</li>
-        <li>Bonus verrouillés à partir du <strong>premier match</strong> (11 juin 2026).</li>
-      </ul>
-      <hr class="div">
-      <h3 style="color:var(--green);margin-bottom:8px">Connexion</h3>
-      <p>Connectez-vous avec votre prénom. Si vous n'existez pas encore, vous êtes automatiquement inscrit. Pas de mot de passe.</p>
-      <hr class="div">
-      <h3 style="color:var(--green);margin-bottom:8px">Administration</h3>
-      <p>Le compte <strong>admin</strong> permet de saisir les scores réels et de valider les réponses bonus. Connectez-vous avec le nom <em>admin</em> et le mot de passe configuré lors du setup.</p>
-    </div>
-  </div>`;
+  return`<div class="card"><div class="card-title"><i class="ti ti-book"></i> Règles du jeu</div><div style="margin-top:14px;line-height:1.8">
+    <h3 style="color:var(--green);margin-bottom:8px">Système de points</h3>
+    <div class="tbl-wrap"><table style="margin-bottom:14px"><thead><tr><th>Résultat</th><th>Points</th></tr></thead><tbody>
+      <tr><td>✅ Score exact</td><td><strong class="p3">3 pts</strong></td></tr>
+      <tr><td>🎯 Bonne équipe + bonne différence de buts</td><td><strong class="p2">2 pts</strong></td></tr>
+      <tr><td>👍 Bonne équipe gagnante</td><td><strong class="p1">1 pt</strong></td></tr>
+      <tr><td>🤝 Nul prédit et nul réel</td><td><strong class="p1">1 pt</strong></td></tr>
+      <tr><td>❌ Mauvais pronostic</td><td><strong class="p0">0 pt</strong></td></tr>
+    </tbody></table></div>
+    <h3 style="color:var(--green);margin-bottom:6px">Bonus</h3>
+    <p>Chaque bonne réponse bonus rapporte <strong>5 points</strong>.</p>
+    <hr class="div">
+    <h3 style="color:var(--green);margin-bottom:6px">Verrouillage</h3>
+    <ul style="margin-left:16px;margin-top:6px">
+      <li>Pronostics verrouillés <strong>1 jour avant</strong> chaque match.</li>
+      <li>Bonus verrouillés à partir du <strong>11 juin 2026</strong> (1er match).</li>
+    </ul>
+    <hr class="div">
+    <h3 style="color:var(--green);margin-bottom:6px">Connexion</h3>
+    <p>Saisissez votre prénom. Si vous n'existez pas encore, vous êtes automatiquement inscrit. Pas de mot de passe nécessaire.</p>
+  </div></div>`;
 }
 
-// ── INIT ───────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────
 async function init(){
   const hash=window.location.hash.slice(1);
   if(!hash){document.getElementById('s-setup').hidden=false;return}
+  try{const cfg=JSON.parse(atob(hash));if(!cfg.url||!cfg.key)throw 0;SB_URL=cfg.url;SB_KEY=cfg.key}
+  catch{document.getElementById('s-setup').hidden=false;return}
   try{
-    const cfg=JSON.parse(atob(hash));
-    DB=cfg.dbUrl;
-  }catch{document.getElementById('s-setup').hidden=false;return}
-  try{
-    const data=await fbRead();
-    if(!data||!data.participants)throw new Error('empty');
-    st=data;
+    st=await sbReadAll();
     document.getElementById('s-login').hidden=false;
-  }catch{
+  }catch(e){
     document.getElementById('s-setup').hidden=false;
+    shErr('su-err','Connexion impossible : '+e.message);
   }
 }
 
-// Hide all screens initially
+// fix: renderTab was calling the fn twice — patch
+function renderTab(){
+  const c=document.getElementById('content');if(!c)return;
+  const fns={classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,participants:rParts,matches:rMatches,'bonus-results':rBonusResults,settings:rSettings,regles:rRegles};
+  c.innerHTML=(fns[tab]||rClassement)();
+}
+
 document.getElementById('s-setup').hidden=true;
 document.getElementById('s-login').hidden=true;
 init();
