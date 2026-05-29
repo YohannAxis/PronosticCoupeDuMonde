@@ -34,7 +34,7 @@ const TABS = [
   {id:'pronos',href:'pronos.html',icon:'ti-pencil',label:'Pronos'},
   {id:'bonus',href:'bonus.html',icon:'ti-star',label:'Bonus'},
   {id:'resultats',href:'resultats.html',icon:'ti-list-details',label:'Résultats'},
-  {id:'tableau',href:'tableau.html',icon:'ti-binary-tree',label:'Tableau'},
+  {id:'phase-finale',href:'phase-finale.html',icon:'ti-binary-tree',label:'Phase Finale'},
   {id:'regles',href:'regles.html',icon:'ti-book',label:'Règles'},
   // Onglets admin uniquement
   {id:'admin',href:'admin.html',icon:'ti-settings-2',label:'Scores',adminOnly:true},

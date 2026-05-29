@@ -132,34 +132,6 @@ function renderGroupContent(){
     </div>`;
   }).join('');
 
-  // Phase éliminatoire
-  const KO_PHASES=['16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
-  let koHtml='';
-  KO_PHASES.forEach(ph=>{
-    const ms=getMatches().filter(m=>m.phase===ph);
-    if(!ms.length)return;
-    koHtml+=`<div class="phase-hdr" style="margin-top:16px">
-      <i class="ti ti-arrow-right" style="font-size:.85rem"></i>${esc(ph)}
-    </div>`;
-    ms.forEach(m=>{
-      const played=m.homeScore!=null;
-      koHtml+=`<div class="ko-row">
-        <div class="ko-team">
-          <div>${teamDisplay(m.home)}</div>
-          <div class="ko-meta">${m.date}</div>
-        </div>
-        ${played
-          ?`<div class="ko-score">${m.homeScore} – ${m.awayScore}</div>`
-          :`<div class="ko-vs">vs</div>`
-        }
-        <div class="ko-team">
-          <div>${teamDisplay(m.away)}</div>
-          <div class="ko-meta">${esc(m.venue)}</div>
-        </div>
-      </div>`;
-    });
-  });
-
   scroll.innerHTML=
     `<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>Classement ${esc(activeGroup)}</div>
     <div class="card" style="padding:10px;overflow-x:auto;margin-bottom:12px">
@@ -171,8 +143,7 @@ function renderGroupContent(){
       </table>
     </div>
     <div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>Matchs ${esc(activeGroup)}</div>
-    ${matchRows||'<div class="empty-state" style="padding:20px"><i class="ti ti-calendar-off"></i>Aucun match</div>'}
-    ${koHtml}`;
+    ${matchRows||'<div class="empty-state" style="padding:20px"><i class="ti ti-calendar-off"></i>Aucun match</div>'}`;
 }
 </script>
 </body>

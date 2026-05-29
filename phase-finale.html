@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>CDM 2026 · Tableau</title>
+<title>CDM 2026 · Phase Finale</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -104,7 +104,7 @@
 (async function(){
   if(!requireUser())return;
   updateUserBadge();
-  buildNav('tableau');
+  buildNav('phase-finale');
   try{
     st=await sbReadAll();
     setSyncBadge(true);
@@ -117,22 +117,17 @@
   }
 })();
 
-// Structure du tableau FIFA 2026 (tirée des IDs de matchs)
-// Chaque ligne : deux matchs R32 → R16 → QF → SF
 const BDATA=[
-  // Côté gauche (→ m101 → m104)
   {r32:['m074','m077'],r16:'m089',qf:'m097',sf:'m101',side:'L'},
   {r32:['m073','m075'],r16:'m090',qf:'m097',sf:'m101',side:'L'},
   {r32:['m083','m084'],r16:'m093',qf:'m098',sf:'m101',side:'L'},
   {r32:['m081','m082'],r16:'m094',qf:'m098',sf:'m101',side:'L'},
-  // Côté droit (→ m102 → m104)
   {r32:['m076','m078'],r16:'m091',qf:'m099',sf:'m102',side:'R'},
   {r32:['m079','m080'],r16:'m092',qf:'m099',sf:'m102',side:'R'},
   {r32:['m085','m087'],r16:'m096',qf:'m100',sf:'m102',side:'R'},
   {r32:['m086','m088'],r16:'m095',qf:'m100',sf:'m102',side:'R'},
 ];
 
-// Rendu d'une carte match dans le bracket
 function bcard(mid,cls=''){
   const m=st.matches?.[mid];
   if(!m)return`<div class="bm${cls?' '+cls:''}">
@@ -155,8 +150,6 @@ function bcard(mid,cls=''){
   </div>`;
 }
 
-// Génère les connecteurs entre deux colonnes
-// dir='L' → connecteurs ouverts à droite, dir='R' → ouverts à gauche
 function connectors(count,dir){
   const t=dir==='L'?'ct':'ctr', b=dir==='L'?'cb':'cbr';
   let h=`<div class="bconn">`;
@@ -170,13 +163,12 @@ function renderBracket(){
 
   const L=BDATA.filter(b=>b.side==='L');
   const R=BDATA.filter(b=>b.side==='R');
-  const lqf=[...new Set(L.map(b=>b.qf))]; // ['m097','m098']
-  const rqf=[...new Set(R.map(b=>b.qf))]; // ['m099','m100']
+  const lqf=[...new Set(L.map(b=>b.qf))];
+  const rqf=[...new Set(R.map(b=>b.qf))];
 
   let html=`<div class="scroll-hint"><i class="ti ti-arrows-left-right"></i> Faites défiler pour voir le tableau complet</div>
   <div class="bracket">`;
 
-  // ── GAUCHE : R32 ──────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">1/32 de finale</div>
     <div class="bc-matches">`;
@@ -190,7 +182,6 @@ function renderBracket(){
 
   html+=connectors(4,'L');
 
-  // ── GAUCHE : R16 ──────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">1/8 de finale</div>
     <div class="bc-matches">`;
@@ -202,7 +193,6 @@ function renderBracket(){
 
   html+=connectors(2,'L');
 
-  // ── GAUCHE : QF ───────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">Quart de finale</div>
     <div class="bc-matches">`;
@@ -214,19 +204,16 @@ function renderBracket(){
 
   html+=connectors(1,'L');
 
-  // ── GAUCHE : SF ───────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">Demi-finale</div>
     <div class="bc-matches" style="justify-content:center">`;
   html+=bcard('m101');
   html+=`</div></div>`;
 
-  // Ligne vers Final (gauche)
   html+=`<div style="width:14px;flex-shrink:0;display:flex;align-items:center;padding-top:22px">
     <div class="chline"></div>
   </div>`;
 
-  // ── CENTRE : FINALE + 3e PLACE ─────────────────────────
   html+=`<div class="bc-center">
     <div class="bc-final-label">⚽ Finale</div>
     ${bcard('m104','bm-final')}
@@ -234,12 +221,10 @@ function renderBracket(){
     ${bcard('m103','bm-3rd')}
   </div>`;
 
-  // Ligne vers Final (droite)
   html+=`<div style="width:14px;flex-shrink:0;display:flex;align-items:center;padding-top:22px">
     <div class="chline"></div>
   </div>`;
 
-  // ── DROITE : SF ───────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">Demi-finale</div>
     <div class="bc-matches" style="justify-content:center">`;
@@ -248,7 +233,6 @@ function renderBracket(){
 
   html+=connectors(1,'R');
 
-  // ── DROITE : QF ───────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">Quart de finale</div>
     <div class="bc-matches">`;
@@ -260,7 +244,6 @@ function renderBracket(){
 
   html+=connectors(2,'R');
 
-  // ── DROITE : R16 ──────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">1/8 de finale</div>
     <div class="bc-matches">`;
@@ -272,7 +255,6 @@ function renderBracket(){
 
   html+=connectors(4,'R');
 
-  // ── DROITE : R32 ──────────────────────────────────────
   html+=`<div class="bc">
     <div class="bc-label">1/32 de finale</div>
     <div class="bc-matches">`;
@@ -284,7 +266,7 @@ function renderBracket(){
   });
   html+=`</div></div>`;
 
-  html+=`</div>`; // end .bracket
+  html+=`</div>`;
   el.innerHTML=html;
 }
 </script>
