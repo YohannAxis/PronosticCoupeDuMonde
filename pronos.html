@@ -14,6 +14,14 @@
 .matches-zone::-webkit-scrollbar{width:4px}
 .matches-zone::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 
+/* Onglets principaux À jouer / Terminés */
+.main-tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:10px}
+.mtab{flex:1;padding:9px 4px;font-size:.8rem;font-weight:700;cursor:pointer;border:none;background:none;color:var(--t2);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s}
+.mtab i{font-size:.95rem}
+.mtab.active{color:var(--g);border-bottom-color:var(--g)}
+.mtab .count{background:var(--bd);color:var(--t2);font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px}
+.mtab.active .count{background:var(--g-l);color:var(--g-d)}
+
 /* Segmented control */
 .mode-toggle{display:flex;background:var(--bd);border-radius:10px;padding:3px;margin-bottom:10px}
 .mode-btn{flex:1;padding:7px 8px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
@@ -25,6 +33,26 @@
 .phase-pills::-webkit-scrollbar{display:none}
 .ppill{padding:5px 11px;border-radius:20px;font-size:.72rem;font-weight:700;border:1.5px solid var(--bd);background:var(--surf);color:var(--t2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .12s;font-family:inherit}
 .ppill.active{background:var(--g);border-color:var(--g);color:#fff}
+.ppill.closed{border-color:#fca5a5;color:#dc2626}
+.ppill.active.closed{background:#dc2626;border-color:#dc2626;color:#fff}
+
+/* Bannière date fermée */
+.closed-banner{background:#fee2e2;border:1.5px solid #fca5a5;border-radius:var(--r-sm);padding:9px 12px;margin-bottom:8px;font-size:.78rem;color:#991b1b;display:flex;align-items:center;gap:7px}
+
+/* Résumé points terminés */
+.pts-summary{background:linear-gradient(135deg,var(--g-d),var(--g));border-radius:var(--r);padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;color:#fff}
+.pts-big{font-size:2.5rem;font-weight:800;line-height:1;flex-shrink:0}
+.pts-info-title{font-size:.88rem;font-weight:700;margin-bottom:2px}
+.pts-info-sub{font-size:.75rem;opacity:.8}
+
+/* Carte match terminé */
+.done-card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:7px}
+.done-teams{font-weight:600;font-size:.85rem;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.done-score-real{font-size:1rem;font-weight:800;flex-shrink:0}
+.done-footer{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--t2)}
+.done-prono{display:flex;align-items:center;gap:5px}
+.done-prono span{background:var(--bg);border-radius:6px;padding:2px 8px;font-weight:600;color:var(--t)}
+.done-prono em{font-style:italic}
 </style>
 </head>
 <body>
@@ -53,7 +81,8 @@
 
 <script src="app.js"></script>
 <script>
-let filterMode = 'groupe'; // 'groupe' | 'date'
+let mainTab = 'ajouer';   // 'ajouer' | 'termines'
+let filterMode = 'date';  // 'date' | 'groupe' — par date en premier
 let activePhase = 'Groupe A';
 let activeDate  = '';
 
@@ -65,7 +94,7 @@ let activeDate  = '';
     st = await sbReadAll();
     setSyncBadge(true);
     buildLayout();
-    startPolling(()=>{ updateMatches(); });
+    startPolling(()=>{ renderMatches(); });
   }catch(e){
     setSyncBadge(false);
     document.getElementById('pronos-layout').innerHTML =
@@ -73,147 +102,187 @@ let activeDate  = '';
   }
 })();
 
-/* ── Format date ── */
+/* ── Helpers ──────────────────────────────────────────────── */
 function fmtDate(d){
   if(!d)return d;
   const mois=['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
-  const parts=d.split('-');
-  return parts[2]+' '+mois[parseInt(parts[1])-1];
+  const p=d.split('-');
+  return p[2]+' '+mois[parseInt(p[1])-1];
+}
+function isDateClosed(d){ return d && today() >= d; }
+// Compte les matchs à jouer (non terminés)
+function countPending(){ return getMatches().filter(m=>m.homeScore==null).length; }
+function countDone(){ return getMatches().filter(m=>m.homeScore!=null).length; }
+// Date la plus pertinente : aujourd'hui ou prochaine date avec matchs non joués
+function bestDate(dates){
+  const t=today();
+  if(dates.includes(t))return t;
+  const fut=dates.filter(d=>d>t);
+  if(fut.length)return fut[0];
+  return dates[dates.length-1]||'';
 }
 
-/* ── Construit toute la zone filtre + liste ── */
+/* ── Construction du layout ───────────────────────────────── */
 function buildLayout(){
-  const matches = getMatches();
+  const allM = getMatches();
+  const pending = allM.filter(m=>m.homeScore==null);
+  const done    = allM.filter(m=>m.homeScore!=null);
 
-  // Phases disponibles
-  const grouped={};
-  matches.forEach(m=>{ if(!grouped[m.phase])grouped[m.phase]=[]; grouped[m.phase].push(m); });
-  const availablePhases = PHASES.filter(ph=>grouped[ph]);
-  if(!availablePhases.includes(activePhase)) activePhase = availablePhases[0]||'Groupe A';
+  // Compter pour les badges
+  const nPending = pending.length;
+  const nDone    = done.length;
 
-  // Dates disponibles
-  const allDates = [...new Set(matches.map(m=>m.date).filter(Boolean))].sort();
-  if(!allDates.includes(activeDate)) activeDate = allDates[0]||'';
-
-  const modeToggle = `<div class="mode-toggle">
-    <button class="mode-btn${filterMode==='groupe'?' active':''}" onclick="setMode('groupe')">
-      <i class="ti ti-layout-grid"></i> Par groupe
+  // Onglets principaux
+  const mainTabsHtml=`<div class="main-tabs">
+    <button class="mtab${mainTab==='ajouer'?' active':''}" onclick="switchMain('ajouer')">
+      <i class="ti ti-pencil"></i> À jouer
+      <span class="count">${nPending}</span>
     </button>
-    <button class="mode-btn${filterMode==='date'?' active':''}" onclick="setMode('date')">
-      <i class="ti ti-calendar"></i> Par date
+    <button class="mtab${mainTab==='termines'?' active':''}" onclick="switchMain('termines')">
+      <i class="ti ti-check"></i> Terminés
+      <span class="count">${nDone}</span>
     </button>
   </div>`;
 
-  const pillsHtml = filterMode==='groupe'
-    ? availablePhases.map(ph=>
-        `<button class="ppill${ph===activePhase?' active':''}" data-val="${esc(ph)}" onclick="switchGroup('${esc(ph)}')">${esc(ph)}</button>`
-      ).join('')
-    : allDates.map(d=>
-        `<button class="ppill${d===activeDate?' active':''}" data-val="${d}" onclick="switchDate('${d}')">${fmtDate(d)}</button>`
+  if(mainTab==='termines'){
+    document.getElementById('pronos-layout').innerHTML=
+      `<div class="filter-zone">${mainTabsHtml}</div>
+      <div class="matches-zone" id="matches-zone"></div>`;
+    renderDone();
+    return;
+  }
+
+  // Mode "À jouer" : filtres + pills
+  // Construire dates / phases disponibles (seulement matchs non joués)
+  const grouped={};
+  pending.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+  const availPhases = PHASES.filter(ph=>grouped[ph]);
+  if(!availPhases.includes(activePhase)) activePhase = availPhases[0]||'Groupe A';
+
+  const allDates = [...new Set(pending.map(m=>m.date).filter(Boolean))].sort();
+  if(!allDates.includes(activeDate)) activeDate = bestDate(allDates);
+
+  const modeToggle=`<div class="mode-toggle">
+    <button class="mode-btn${filterMode==='date'?' active':''}" onclick="setMode('date')">
+      <i class="ti ti-calendar"></i> Par date
+    </button>
+    <button class="mode-btn${filterMode==='groupe'?' active':''}" onclick="setMode('groupe')">
+      <i class="ti ti-layout-grid"></i> Par groupe
+    </button>
+  </div>`;
+
+  const pillsHtml = filterMode==='date'
+    ? allDates.map(d=>{
+        const closed=isDateClosed(d);
+        return`<button class="ppill${d===activeDate?' active':''}${closed?' closed':''}"
+          data-val="${d}" onclick="switchDate('${d}')">${fmtDate(d)}${closed?' 🔒':''}</button>`;
+      }).join('')
+    : availPhases.map(ph=>
+        `<button class="ppill${ph===activePhase?' active':''}"
+          data-val="${esc(ph)}" onclick="switchGroup('${esc(ph)}')">${esc(ph)}</button>`
       ).join('');
 
-  document.getElementById('pronos-layout').innerHTML =
+  if(!pending.length){
+    document.getElementById('pronos-layout').innerHTML=
+      `<div class="filter-zone">${mainTabsHtml}</div>
+      <div class="matches-zone">
+        <div class="empty-state"><i class="ti ti-trophy"></i>Tous les matchs sont terminés !</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('pronos-layout').innerHTML=
     `<div class="filter-zone">
-      <div class="sec-title" style="margin-bottom:8px"><i class="ti ti-pencil"></i> Mes pronostics</div>
+      ${mainTabsHtml}
       ${modeToggle}
       <div class="phase-pills" id="filter-pills">${pillsHtml}</div>
     </div>
     <div class="matches-zone" id="matches-zone"></div>`;
 
-  updateMatches();
+  renderMatches();
 
   // Scroll la pill active en vue
   setTimeout(()=>{
-    const activePill = document.querySelector('.ppill.active');
-    if(activePill) activePill.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
-  }, 50);
+    const a=document.querySelector('.ppill.active');
+    if(a)a.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+  },50);
 }
 
-/* ── Changement de mode ── */
-function setMode(mode){
-  filterMode = mode;
+/* ── Changements d'onglet / mode ─────────────────────────── */
+function switchMain(tab){
+  mainTab=tab;
   buildLayout();
+  document.getElementById('matches-zone')?.scrollTo(0,0);
 }
-
-/* ── Changement de groupe ── */
+function setMode(mode){filterMode=mode;buildLayout();}
 function switchGroup(ph){
-  activePhase = ph;
-  document.querySelectorAll('#filter-pills .ppill').forEach(b=>{
-    b.classList.toggle('active', b.dataset.val===ph);
-  });
-  scrollMatchesTop();
-  updateMatches();
+  activePhase=ph;
+  document.querySelectorAll('#filter-pills .ppill').forEach(b=>b.classList.toggle('active',b.dataset.val===ph));
+  document.getElementById('matches-zone')?.scrollTo(0,0);
+  renderMatches();
 }
-
-/* ── Changement de date ── */
 function switchDate(d){
-  activeDate = d;
-  document.querySelectorAll('#filter-pills .ppill').forEach(b=>{
-    b.classList.toggle('active', b.dataset.val===d);
-  });
-  scrollMatchesTop();
-  updateMatches();
+  activeDate=d;
+  document.querySelectorAll('#filter-pills .ppill').forEach(b=>b.classList.toggle('active',b.dataset.val===d));
+  document.getElementById('matches-zone')?.scrollTo(0,0);
+  renderMatches();
 }
 
-function scrollMatchesTop(){
-  const z = document.getElementById('matches-zone');
-  if(z) z.scrollTo(0,0);
-}
+/* ── Render liste "À jouer" ──────────────────────────────── */
+function renderMatches(){
+  const zone=document.getElementById('matches-zone');
+  if(!zone)return;
 
-/* ── Render la liste de matchs selon le filtre actif ── */
-function updateMatches(){
-  const zone = document.getElementById('matches-zone');
-  if(!zone) return;
-
+  // Matchs non joués seulement
   let matches;
-  if(filterMode==='groupe'){
-    matches = getMatches().filter(m=>m.phase===activePhase);
-  } else {
-    matches = getMatches().filter(m=>m.date===activeDate);
+  if(filterMode==='date'){
+    matches=getMatches().filter(m=>m.homeScore==null&&m.date===activeDate);
+  }else{
+    matches=getMatches().filter(m=>m.homeScore==null&&m.phase===activePhase);
   }
 
   if(!matches.length){
-    zone.innerHTML = '<div class="empty-state"><i class="ti ti-calendar-off"></i>Aucun match</div>';
+    zone.innerHTML='<div class="empty-state"><i class="ti ti-calendar-check"></i>Aucun match à jouer ici</div>';
     return;
   }
 
-  const prons = getProns();
+  const prons=getProns();
+  let html='';
 
-  if(filterMode==='date'){
-    // Regrouper par phase dans la vue par date
-    const grouped={};
-    matches.forEach(m=>{
-      if(!grouped[m.phase])grouped[m.phase]=[];
-      grouped[m.phase].push(m);
-    });
-    let html='';
-    PHASES.filter(ph=>grouped[ph]).forEach(ph=>{
-      html += `<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>${esc(ph)}</div>`;
-      html += grouped[ph].map(m=>renderMatch(m,prons)).join('');
-    });
-    zone.innerHTML = html;
-  } else {
-    zone.innerHTML = matches.map(m=>renderMatch(m,prons)).join('');
+  // Bannière si date passée
+  if(filterMode==='date'&&isDateClosed(activeDate)){
+    html+=`<div class="closed-banner">
+      <i class="ti ti-lock"></i>
+      <span>Pronostics <strong>fermés</strong> — matchs du ${fmtDate(activeDate)} déjà passés.</span>
+    </div>`;
   }
+
+  // En mode date, grouper par phase si plusieurs phases ce jour-là
+  if(filterMode==='date'){
+    const grouped={};
+    matches.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+    PHASES.filter(ph=>grouped[ph]).forEach(ph=>{
+      if(Object.keys(grouped).length>1)
+        html+=`<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>${esc(ph)}</div>`;
+      html+=grouped[ph].map(m=>renderMatchCard(m,prons)).join('');
+    });
+  }else{
+    html+=matches.map(m=>renderMatchCard(m,prons)).join('');
+  }
+
+  zone.innerHTML=html;
 }
 
-/* ── Rendu d'une carte match ── */
-function renderMatch(m,prons){
-  const key  = user.id+'_'+m.id;
-  const p    = prons[key]||{};
-  const ed   = isEditable(m);
-  const played = m.homeScore!=null;
-  const pts  = played ? calcPts(p,m) : null;
-  const cls  = pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
-  const chip = pts!==null ? `<span class="pts-chip ${cls}">${pts}pt${pts!==1?'s':''}</span>` : '';
-  const real = played ? `<span style="font-size:.67rem;color:var(--t2);margin-left:3px">(${m.homeScore}–${m.awayScore})</span>` : '';
+/* ── Render une carte match "À jouer" ─────────────────────── */
+function renderMatchCard(m,prons){
+  const key=user.id+'_'+m.id;
+  const p=prons[key]||{};
+  const ed=isEditable(m);
+  const meta=`${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}`;
 
   if(ed){
-    return `<div class="match-card">
-      <div class="match-meta">
-        <i class="ti ti-calendar" style="font-size:.75rem"></i>
-        ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}
-      </div>
+    return`<div class="match-card">
+      <div class="match-meta"><i class="ti ti-calendar" style="font-size:.75rem"></i>${meta}</div>
       <div class="match-body">
         <div class="team">${teamLabel(m.home)}</div>
         <div class="score-grp">
@@ -228,38 +297,100 @@ function renderMatch(m,prons){
         <div class="team">${teamLabel(m.away)}</div>
       </div>
     </div>`;
-  } else {
-    const scoreDisp = p.homeScore!=null
-      ? `<span class="sval">${p.homeScore}–${p.awayScore}</span>`
-      : `<span class="sval" style="color:var(--t2);font-size:.85rem">–</span>`;
-    return `<div class="match-card${played?' played':' locked'}">
-      <div class="match-meta">
-        <i class="ti ti-lock" style="font-size:.75rem"></i>
-        ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}${chip}${real}
-      </div>
+  }else{
+    // Verrouillé mais pas encore joué
+    const sc=p.homeScore!=null
+      ?`<span class="sval">${p.homeScore}–${p.awayScore}</span>`
+      :`<span class="sval" style="color:var(--t2);font-size:.82rem">–</span>`;
+    return`<div class="match-card locked">
+      <div class="match-meta"><i class="ti ti-lock" style="font-size:.75rem"></i>${meta}</div>
       <div class="match-body">
         <div class="team">${teamLabel(m.home)}</div>
-        ${scoreDisp}
+        ${sc}
         <div class="team">${teamLabel(m.away)}</div>
       </div>
     </div>`;
   }
 }
 
-/* ── Sauvegarde ── */
+/* ── Render liste "Terminés" ─────────────────────────────── */
+function renderDone(){
+  const zone=document.getElementById('matches-zone');
+  if(!zone)return;
+  const prons=getProns();
+  const done=getMatches().filter(m=>m.homeScore!=null);
+
+  if(!done.length){
+    zone.innerHTML='<div class="empty-state"><i class="ti ti-clock"></i>Aucun match terminé pour l\'instant.</div>';
+    return;
+  }
+
+  // Calcul total des points
+  let totalPts=0;
+  done.forEach(m=>{
+    const p=prons[user.id+'_'+m.id];
+    const pts=calcPts(p,m);
+    if(pts)totalPts+=pts;
+  });
+
+  let html=`<div class="pts-summary">
+    <div class="pts-big">${totalPts}</div>
+    <div>
+      <div class="pts-info-title">pts sur ${done.length} match${done.length>1?'s':''} joué${done.length>1?'s':''}</div>
+      <div class="pts-info-sub">Pronostics de matchs terminés</div>
+    </div>
+  </div>`;
+
+  // Grouper par phase
+  const grouped={};
+  done.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+
+  PHASES.filter(ph=>grouped[ph]).forEach(ph=>{
+    html+=`<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>${esc(ph)}</div>`;
+    grouped[ph].forEach(m=>{
+      const key=user.id+'_'+m.id;
+      const p=prons[key]||{};
+      const pts=calcPts(p,m);
+      const ptsCls=pts===5?'p3':pts===3?'p2':pts===1?'p1':'p0';
+      const ptsLabel=pts!=null?`<span class="pts-chip ${ptsCls}">${pts}pt${pts!==1?'s':''}</span>`:'';
+      const pronoTxt=p.homeScore!=null
+        ?`<span>${p.homeScore}–${p.awayScore}</span>`
+        :`<em>Non renseigné</em>`;
+
+      html+=`<div class="done-card">
+        <div class="done-teams">
+          <span>${teamLabel(m.home)}</span>
+          <span class="done-score-real">${m.homeScore} – ${m.awayScore}</span>
+          <span style="text-align:right">${teamLabel(m.away)}</span>
+        </div>
+        <div class="done-footer">
+          <span class="done-prono"><i class="ti ti-pencil" style="font-size:.75rem"></i> ${pronoTxt}</span>
+          <span style="display:flex;align-items:center;gap:5px">
+            ${ptsLabel}
+            <span style="color:var(--t2);font-size:.67rem">${m.date}</span>
+          </span>
+        </div>
+      </div>`;
+    });
+  });
+
+  zone.innerHTML=html;
+}
+
+/* ── Sauvegarde ──────────────────────────────────────────── */
 async function savePron(mid,side,val){
-  const pid = user.id;
-  const key = pid+'_'+mid;
-  if(!st.pronostics) st.pronostics={};
-  const cur = st.pronostics[key]||{};
-  const upd = {...cur, participantId:pid, matchId:mid, homeScore:cur.homeScore??null, awayScore:cur.awayScore??null};
-  upd[side+'Score'] = val===''?null:+val;
-  st.pronostics[key] = upd;
-  if(upd.homeScore!=null && upd.awayScore!=null){
+  const pid=user.id;
+  const key=pid+'_'+mid;
+  if(!st.pronostics)st.pronostics={};
+  const cur=st.pronostics[key]||{};
+  const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
+  upd[side+'Score']=val===''?null:+val;
+  st.pronostics[key]=upd;
+  if(upd.homeScore!=null&&upd.awayScore!=null){
     try{
       await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
       toast('Pronostic sauvegardé ✓','ok');
-    }catch(e){ toast(e.message,'ko'); }
+    }catch(e){toast(e.message,'ko');}
   }
 }
 </script>
