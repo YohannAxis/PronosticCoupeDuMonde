@@ -184,7 +184,6 @@ create policy "all" on settings for all using (true) with check (true);</div>
     <button class="btn btn-primary" onclick="doAdminLogin()"><i class="ti ti-shield"></i> Connexion admin</button>
     <p id="li-err" class="err" style="color:#fca5a5"></p>
   </div>
-  <div class="reconfig"><span onclick="showSetup()">⚙ Reconfigurer Supabase</span></div>
 </div>
 
 <!-- APP -->
@@ -774,14 +773,9 @@ async function saveBR(qid){
 
 // ── SETTINGS ──────────────────────────────────────────
 function rSettings(){
-  return`<div class="card"><div class="card-title"><i class="ti ti-adjustments"></i> Paramètres</div>
-    <div class="fg" style="margin-top:14px"><label>Supabase URL</label><input type="text" id="s-url" value="${esc(SB_URL)}"></div>
-    <div class="fg"><label>Anon key</label><input type="text" id="s-key" value="${esc(SB_KEY)}"></div>
-    ${admin?`<div class="fg"><label>Nouveau mot de passe admin</label><input type="password" id="s-pwd" placeholder="Laisser vide pour ne pas changer"></div><button class="btn btn-primary" style="max-width:220px" onclick="doSaveSettings()"><i class="ti ti-check"></i> Sauvegarder</button>`:''}
-  </div>
-  <div class="card"><div class="card-title"><i class="ti ti-info-circle"></i> Infos</div>
+  const infoCard=`<div class="card"><div class="card-title"><i class="ti ti-info-circle"></i> Infos</div>
     <p style="font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.8">
-      <strong>Backend :</strong> Supabase (PostgreSQL) — données sécurisées, backups quotidiens<br>
+      <strong>Backend :</strong> Supabase (PostgreSQL)<br>
       <strong>Utilisateur :</strong> ${esc(user?.name||'—')} · <strong>Mode :</strong> ${admin?'Administrateur':'Participant'}<br>
       <strong>Matchs :</strong> ${getMatches().length} · <strong>Participants :</strong> ${getParts().length}
     </p>
@@ -790,9 +784,22 @@ function rSettings(){
       <button class="btn btn-ghost btn-sm" onclick="forceRefresh()"><i class="ti ti-refresh"></i> Rafraîchir</button>
     </div>
   </div>`;
+
+  if(!admin) return infoCard;
+
+  return`<div class="card"><div class="card-title"><i class="ti ti-adjustments"></i> Paramètres admin</div>
+    <div class="fg" style="margin-top:14px"><label>Supabase URL</label><input type="text" id="s-url" value="${esc(SB_URL)}"></div>
+    <div class="fg"><label>Anon key</label><input type="text" id="s-key" value="${esc(SB_KEY)}"></div>
+    <div class="fg"><label>Nouveau mot de passe admin</label><input type="password" id="s-pwd" placeholder="Laisser vide pour ne pas changer"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="doSaveSettings()"><i class="ti ti-check"></i> Sauvegarder</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetSetup()"><i class="ti ti-refresh"></i> Reconfigurer Supabase</button>
+    </div>
+  </div>${infoCard}`;
 }
 function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>toast('Lien copié ✓','ok'))}
 async function forceRefresh(){try{st=await sbReadAll();toast('Données rechargées ✓','ok');renderTab()}catch(e){toast(e.message,'ko')}}
+function resetSetup(){if(!confirm('Reconfigurer Supabase ? Cela effacera le lien actuel.'))return;window.location.hash='';window.location.reload()}
 async function doSaveSettings(){
   const url=document.getElementById('s-url')?.value.trim();
   const key=document.getElementById('s-key')?.value.trim();
