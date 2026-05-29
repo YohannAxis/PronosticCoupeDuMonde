@@ -125,15 +125,14 @@ tr.qual td{background:#f0fdf4}
 <body>
 <div id="toast" class="toast"></div>
 
-<!-- SETUP -->
+<!-- SETUP (admin uniquement, accessible via ?setup) -->
 <div id="s-setup" class="center" hidden>
   <div class="auth-card">
     <div class="logo">🏆</div>
-    <h1>Configuration initiale</h1>
-    <p class="sub">Coupe du Monde 2026 — Backend Supabase (PostgreSQL gratuit)</p>
+    <h1>Configuration — Admin</h1>
+    <p class="sub">Coupe du Monde 2026 · Réservé à l'administrateur</p>
 
-    <div class="step"><span class="sn">1</span> Créez un projet sur <a href="https://supabase.com" target="_blank" style="color:var(--green);margin-left:4px">supabase.com</a> (email seul)</div>
-
+    <div class="step"><span class="sn">1</span> Créez un projet sur <a href="https://supabase.com" target="_blank" style="color:var(--green);margin-left:4px">supabase.com</a></div>
     <div class="step"><span class="sn">2</span> Dans <strong>SQL Editor</strong>, exécutez ce script :</div>
     <div class="sql-block" id="sql-block">create table participants (id text primary key, name text);
 create table matches (id text primary key, phase text, home text, away text, "date" text, "time" text, venue text, homescore int, awayscore int);
@@ -155,7 +154,7 @@ create policy "all" on bonus_results for all using (true) with check (true);
 create policy "all" on settings for all using (true) with check (true);</div>
     <button class="copy-btn" onclick="copySQL()">📋 Copier le script SQL</button>
 
-    <div class="step" style="margin-top:14px"><span class="sn">3</span> Dans <strong>Project Settings → API</strong>, copiez vos clés :</div>
+    <div class="step" style="margin-top:14px"><span class="sn">3</span> <strong>Project Settings → API</strong> :</div>
     <div class="fg"><label>Project URL</label>
       <input type="text" id="su-url" placeholder="https://xxxxxxxxxxxx.supabase.co"></div>
     <div class="fg"><label>Anon public key</label>
@@ -165,6 +164,15 @@ create policy "all" on settings for all using (true) with check (true);</div>
 
     <button class="btn btn-primary" onclick="doSetup()"><i class="ti ti-rocket"></i> Initialiser l'application</button>
     <p id="su-err" class="err"></p>
+  </div>
+</div>
+
+<!-- LIEN INVALIDE (utilisateurs sans hash) -->
+<div id="s-invalid" class="center" hidden>
+  <div class="auth-card" style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:16px">🔗</div>
+    <h1 style="margin-bottom:8px">Lien invalide</h1>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.6">Ce lien n'est pas valide.<br>Demandez le lien de participation à l'administrateur.</p>
   </div>
 </div>
 
@@ -532,7 +540,10 @@ async function doSetup(){
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> Initialisation…';
   try{
     await sbInit(url,key,pwd);
-    toast('Application initialisée !','ok');
+    toast('Application initialisée ! Copiez le lien ci-dessous.','ok');
+    // Retirer ?setup de l'URL et rediriger vers la page participant
+    const cleanUrl=window.location.origin+window.location.pathname+window.location.hash;
+    window.history.replaceState(null,'',cleanUrl);
     document.getElementById('s-setup').hidden=true;
     document.getElementById('s-login').hidden=false;
     renderLoginScreen();
@@ -851,7 +862,7 @@ function rSettings(){
 }
 function copyLink(){navigator.clipboard.writeText(window.location.href).then(()=>toast('Lien copié ✓','ok'))}
 async function forceRefresh(){try{st=await sbReadAll();toast('Données rechargées ✓','ok');renderTab()}catch(e){toast(e.message,'ko')}}
-function resetSetup(){if(!confirm('Reconfigurer Supabase ? Cela effacera le lien actuel.'))return;window.location.hash='';window.location.reload()}
+function resetSetup(){if(!confirm('Ouvrir la page de configuration admin ?'))return;window.open(window.location.origin+window.location.pathname+'?setup','_blank')}
 async function doSaveSettings(){
   const url=document.getElementById('s-url')?.value.trim();
   const key=document.getElementById('s-key')?.value.trim();
@@ -890,16 +901,27 @@ function rRegles(){
 // ── INIT ──────────────────────────────────────────────
 async function init(){
   const hash=window.location.hash.slice(1);
-  if(!hash){document.getElementById('s-setup').hidden=false;return}
+  const isSetupMode=new URLSearchParams(window.location.search).has('setup');
+
+  // Pas de hash
+  if(!hash){
+    // Accès admin setup via ?setup
+    if(isSetupMode){document.getElementById('s-setup').hidden=false}
+    else{document.getElementById('s-invalid').hidden=false}
+    return;
+  }
+
+  // Hash présent — déchiffrer config
   try{const cfg=JSON.parse(atob(hash));if(!cfg.url||!cfg.key)throw 0;SB_URL=cfg.url;SB_KEY=cfg.key}
-  catch{document.getElementById('s-setup').hidden=false;return}
+  catch{document.getElementById('s-invalid').hidden=false;return}
+
+  // Charger les données
   try{
     st=await sbReadAll();
     document.getElementById('s-login').hidden=false;
     renderLoginScreen();
   }catch(e){
-    document.getElementById('s-setup').hidden=false;
-    shErr('su-err','Connexion impossible : '+e.message);
+    document.getElementById('s-invalid').hidden=false;
   }
 }
 
