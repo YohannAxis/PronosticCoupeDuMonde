@@ -374,7 +374,11 @@ async function sbReadAll(){
   s.matches=Object.fromEntries(matches.map(m=>[m.id,{...m,homeScore:m.homescore,awayScore:m.awayscore}]));
   s.pronostics=Object.fromEntries(prons.map(p=>[p.id,{...p,participantId:p.participantid,matchId:p.matchid,homeScore:p.homescore,awayScore:p.awayscore}]));
   s.bonus={};
-  bonus.forEach(b=>{if(!s.bonus[b.participantid])s.bonus[b.participantid]={};s.bonus[b.participantid][b.questionid]=b.answer});
+  bonus.forEach(b=>{
+    if(!s.bonus[b.participantid])s.bonus[b.participantid]={};
+    if(b.questionid==='_locked') s.bonus[b.participantid]._locked=(b.answer==='true');
+    else s.bonus[b.participantid][b.questionid]=b.answer;
+  });
   s.bonusResults=Object.fromEntries(br.map(r=>[r.id,r.answer]));
   s.bonusQuestions=SBQ;
   s.settings={adminPwd:(settings.find(x=>x.key==='adminpwd')||{}).value||''};
@@ -442,9 +446,14 @@ function isEditable(m){
   const lk=new Date(y,mo-1,d-1);
   return today()<lk.getFullYear()+'-'+S2(lk.getMonth()+1)+'-'+S2(lk.getDate());
 }
+function isBonusLocked(){
+  if(!user||user.id==='admin')return false;
+  return (getBonus()[user.id]||{})._locked===true;
+}
 function isBonusEditable(){
   const fd=getMatches().filter(m=>m.date).sort((a,b)=>a.date.localeCompare(b.date))[0]?.date;
-  return !fd||today()<fd;
+  if(fd&&today()>=fd)return false;
+  return !isBonusLocked();
 }
 
 // ── AUTH ──────────────────────────────────────────────
@@ -539,10 +548,8 @@ const TABS=[
   {id:'tous-pronostics',icon:'ti-table',label:'Tous les pronostics'},
   {id:'resultats',icon:'ti-list-details',label:'Résultats'},
   {id:'dashboard',icon:'ti-settings-2',label:'Dashboard admin',adminOnly:true},
-  {id:'participants',icon:'ti-users',label:'Participants'},
   {id:'matches',icon:'ti-calendar',label:'Matchs'},
-  {id:'bonus-results',icon:'ti-star-filled',label:'Résultats bonus'},
-  {id:'settings',icon:'ti-adjustments',label:'Paramètres'},
+  {id:'settings',icon:'ti-adjustments',label:'Paramètres',adminOnly:true},
   {id:'regles',icon:'ti-book',label:'Règles'}
 ];
 function buildNav(){
@@ -612,13 +619,58 @@ async function savePron(pid,mid,side,val){
 // ── MES BONUS ─────────────────────────────────────────
 function rMesBonus(){
   if(!user)return'';
-  const my=(getBonus()[user.id]||{}),ed=isBonusEditable();
-  let html=`<div class="card"><div class="card-hdr"><div class="card-title"><i class="ti ti-star"></i> Mes bonus</div>${ed?'<span class="badge b-live">Ouvert</span>':'<span class="badge b-red"><i class="ti ti-lock"></i> Verrouillé</span>'}</div>${!ed?'<p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Bonus verrouillés depuis le début du tournoi.</p>':''}`;
+  const my=(getBonus()[user.id]||{}),ed=isBonusEditable(),locked=isBonusLocked();
+  const tournamentStarted=!isBonusEditable()&&!locked;
+
+  let reasonHtml='';
+  if(locked) reasonHtml=`<div style="background:#fef3c7;border:1.5px solid #fbbf24;border-radius:8px;padding:10px 14px;font-size:.83rem;color:#92400e;margin-bottom:14px"><i class="ti ti-lock"></i> Vous avez verrouillé vos bonus — plus aucune modification possible.</div>`;
+  else if(tournamentStarted) reasonHtml=`<div style="background:#fee2e2;border:1.5px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:.83rem;color:#991b1b;margin-bottom:14px"><i class="ti ti-lock"></i> Bonus verrouillés — le tournoi a commencé.</div>`;
+
+  let html=`<div class="card"><div class="card-hdr">
+    <div class="card-title"><i class="ti ti-star"></i> Mes bonus</div>
+    ${ed?'<span class="badge b-live">Ouvert</span>':locked?'<span class="badge" style="background:#f59e0b;color:#fff"><i class="ti ti-lock"></i> Verrouillé par vous</span>':'<span class="badge b-red"><i class="ti ti-lock"></i> Tournoi démarré</span>'}
+  </div>${reasonHtml}`;
+
   SBQ.forEach(q=>{
     const v=esc(my[q.id]||'');
-    html+=`<div class="bonus-box"><label style="font-weight:600;margin-bottom:8px">${esc(q.label)}</label>${ed?`<input type="text" value="${v}" placeholder="Votre réponse…" onblur="saveBonus('${q.id}',this.value)" onkeydown="if(event.key==='Enter')saveBonus('${q.id}',this.value)">`:`<div style="padding:9px;background:var(--bg);border-radius:7px;color:${my[q.id]?'var(--text)':'var(--muted)'}">${my[q.id]||'<em>Non renseigné</em>'}</div>`}</div>`;
+    html+=`<div class="bonus-box"><label style="font-weight:600;margin-bottom:8px">${esc(q.label)}</label>
+      ${ed
+        ?`<input type="text" value="${v}" placeholder="Votre réponse…"
+            onblur="saveBonus('${q.id}',this.value)"
+            onkeydown="if(event.key==='Enter')saveBonus('${q.id}',this.value)">`
+        :`<div style="padding:9px;background:var(--bg);border-radius:7px;color:${my[q.id]?'var(--text)':'var(--muted)'}">${my[q.id]||'<em>Non renseigné</em>'}</div>`
+      }
+    </div>`;
   });
+
+  if(ed){
+    const hasAnswers=SBQ.some(q=>my[q.id]);
+    if(hasAnswers){
+      html+=`<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <button class="btn btn-danger" style="width:auto" onclick="lockBonus()">
+          <i class="ti ti-lock"></i> Valider et verrouiller mes bonus
+        </button>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:6px">⚠ Action irréversible — vous ne pourrez plus modifier vos réponses.</p>
+      </div>`;
+    }else{
+      html+=`<p style="font-size:.8rem;color:var(--muted);margin-top:12px">Renseignez vos réponses puis validez pour les verrouiller.</p>`;
+    }
+  }
+
   return html+'</div>';
+}
+
+async function lockBonus(){
+  if(!user)return;
+  if(!confirm('Verrouiller définitivement vos bonus ?\nVous ne pourrez plus les modifier après.'))return;
+  try{
+    await sbUpsert('bonus',{id:user.id+'__locked',participantid:user.id,questionid:'_locked',answer:'true'});
+    if(!st.bonus)st.bonus={};
+    if(!st.bonus[user.id])st.bonus[user.id]={};
+    st.bonus[user.id]._locked=true;
+    toast('Bonus verrouillés ✓','ok');
+    renderTab();
+  }catch(e){toast(e.message,'ko')}
 }
 
 async function saveBonus(qid,val){
@@ -854,7 +906,7 @@ async function init(){
 // fix: renderTab was calling the fn twice — patch
 function renderTab(){
   const c=document.getElementById('content');if(!c)return;
-  const fns={classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,participants:rParts,matches:rMatches,'bonus-results':rBonusResults,settings:rSettings,regles:rRegles};
+  const fns={classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,matches:rMatches,settings:rSettings,regles:rRegles};
   c.innerHTML=(fns[tab]||rClassement)();
 }
 
