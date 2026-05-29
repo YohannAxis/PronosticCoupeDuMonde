@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Règles</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.rule-card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.rule-card-title{font-weight:700;font-size:.88rem;color:var(--g-d);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.rule-card-title i{font-size:1rem}
+.pts-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.pts-row:last-child{border-bottom:none;padding-bottom:0}
+.pts-row .emoji{font-size:1.2rem;flex-shrink:0;width:26px;text-align:center}
+.pts-row .desc{flex:1;font-size:.82rem;line-height:1.45;color:var(--t)}
+.pts-row .desc strong{color:var(--t)}
+.pts-row .pts{flex-shrink:0}
+.info-banner{margin-top:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:.78rem;line-height:1.6;display:flex;align-items:flex-start;gap:8px}
+.info-banner i{flex-shrink:0;margin-top:1px}
+.banner-gold{background:var(--gold-l);color:#854d0e}
+.banner-green{background:var(--g-l);color:var(--g-d)}
+.banner-blue{background:#dbeafe;color:#1e40af}
+.bonus-list{margin:8px 0 0 4px;display:flex;flex-direction:column;gap:6px}
+.bonus-item{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--t)}
+.bonus-item i{color:var(--gold);font-size:.95rem}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content">
+    <div class="page-content-inner">
+
+      <div class="sec-title"><i class="ti ti-book"></i> Règles du jeu</div>
+
+      <!-- Système de points -->
+      <div class="rule-card">
+        <div class="rule-card-title">
+          <i class="ti ti-calculator" style="color:var(--g)"></i> Système de points — matchs
+        </div>
+
+        <div class="pts-row">
+          <div class="emoji">🎯</div>
+          <div class="desc"><strong>Score exact</strong> — tu as prédit le score précis du match</div>
+          <div class="pts"><span class="pts-chip p3" style="font-size:.8rem;padding:3px 9px">3 pts</span></div>
+        </div>
+
+        <div class="pts-row">
+          <div class="emoji">✅</div>
+          <div class="desc"><strong>Bonne équipe + bonne différence</strong> — bon vainqueur et même écart de buts (ex : tu joues 2-0, le score est 3-1)</div>
+          <div class="pts"><span class="pts-chip p2" style="font-size:.8rem;padding:3px 9px">2 pts</span></div>
+        </div>
+
+        <div class="pts-row">
+          <div class="emoji">👍</div>
+          <div class="desc"><strong>Bonne équipe gagnante</strong> — tu as prédit le bon vainqueur, mais pas la bonne différence</div>
+          <div class="pts"><span class="pts-chip p1" style="font-size:.8rem;padding:3px 9px">1 pt</span></div>
+        </div>
+
+        <div class="pts-row">
+          <div class="emoji">🤝</div>
+          <div class="desc"><strong>Nul prédit + nul réel</strong> — tu as prédit un match nul et il se termine effectivement à égalité</div>
+          <div class="pts"><span class="pts-chip p1" style="font-size:.8rem;padding:3px 9px">1 pt</span></div>
+        </div>
+
+        <div class="pts-row">
+          <div class="emoji">❌</div>
+          <div class="desc"><strong>Mauvais pronostic</strong> — tu as prédit le mauvais vainqueur</div>
+          <div class="pts"><span class="pts-chip p0" style="font-size:.8rem;padding:3px 9px">0 pt</span></div>
+        </div>
+
+        <div class="info-banner banner-green">
+          <i class="ti ti-info-circle"></i>
+          <span>Un pronostic non renseigné compte pour <strong>0 point</strong>.</span>
+        </div>
+      </div>
+
+      <!-- Questions bonus -->
+      <div class="rule-card">
+        <div class="rule-card-title">
+          <i class="ti ti-star" style="color:var(--gold)"></i> Questions bonus
+        </div>
+
+        <p style="font-size:.84rem;line-height:1.65;color:var(--t);margin-bottom:10px">
+          3 questions à remplir <strong>avant le début du tournoi</strong>. Chaque bonne réponse vaut <span class="pts-chip p3" style="font-size:.78rem;padding:2px 8px;vertical-align:middle">+5 pts</span>.
+        </p>
+
+        <div class="bonus-list">
+          <div class="bonus-item"><i class="ti ti-trophy"></i> Vainqueur de la Coupe du Monde</div>
+          <div class="bonus-item"><i class="ti ti-ball-football"></i> Meilleur buteur du tournoi</div>
+          <div class="bonus-item"><i class="ti ti-star"></i> Meilleure équipe (style de jeu)</div>
+        </div>
+
+        <div class="info-banner banner-gold" style="margin-top:10px">
+          <i class="ti ti-lock"></i>
+          <span>Les bonus se verrouillent au coup d'envoi du <strong>premier match (11 juin)</strong>. Tu peux aussi les verrouiller manuellement avant. Une fois verrouillés, aucune modification n'est possible.</span>
+        </div>
+      </div>
+
+      <!-- Verrouillage des pronostics -->
+      <div class="rule-card">
+        <div class="rule-card-title">
+          <i class="ti ti-lock" style="color:var(--g)"></i> Verrouillage des pronostics
+        </div>
+
+        <p style="font-size:.84rem;line-height:1.65;color:var(--t)">
+          Chaque pronostic est automatiquement verrouillé <strong>1 jour avant le match</strong>. Passé ce délai, il n'est plus possible de le modifier.
+        </p>
+
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:var(--g-l);border:1.5px solid var(--bd2);border-radius:var(--r-sm);padding:10px;text-align:center">
+            <div style="font-size:1.2rem;margin-bottom:4px">✏️</div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--g-d)">Modifiable</div>
+            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">Plus de 24h avant le match</div>
+          </div>
+          <div style="background:#fafafa;border:1.5px solid var(--bd);border-radius:var(--r-sm);padding:10px;text-align:center;opacity:.75">
+            <div style="font-size:1.2rem;margin-bottom:4px">🔒</div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--t2)">Verrouillé</div>
+            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">Moins de 24h avant le match</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synchronisation -->
+      <div class="rule-card" style="margin-bottom:0">
+        <div class="rule-card-title">
+          <i class="ti ti-refresh" style="color:var(--g)"></i> Synchronisation &amp; classement
+        </div>
+
+        <p style="font-size:.84rem;line-height:1.65;color:var(--t)">
+          Les données et le classement sont synchronisés automatiquement <strong>toutes les 20 secondes</strong>. L'heure de la dernière mise à jour est indiquée en haut de l'écran.
+        </p>
+
+        <div class="info-banner banner-blue" style="margin-top:10px">
+          <i class="ti ti-users"></i>
+          <span>Plusieurs joueurs peuvent remplir leurs pronostics simultanément — les données sont stockées de façon indépendante pour chaque participant.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function(){
+  if(!requireUser())return;
+  updateUserBadge();
+  buildNav('regles');
+})();
+</script>
+</body>
+</html>

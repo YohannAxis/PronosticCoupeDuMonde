@@ -8,23 +8,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.pronos-layout{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-.pills-zone{
-  flex-shrink:0;
-  padding:10px 14px 0;
-}
-.matches-zone{
-  flex:1;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  padding:10px 14px calc(var(--nav-h) + 14px);
-}
+.pronos-layout{display:flex;flex-direction:column;height:100%}
+.filter-zone{flex-shrink:0;padding:10px 14px 4px;background:var(--bg)}
+.matches-zone{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 14px calc(var(--nav-h) + 14px)}
 .matches-zone::-webkit-scrollbar{width:4px}
 .matches-zone::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+
+/* Segmented control */
+.mode-toggle{display:flex;background:var(--bd);border-radius:10px;padding:3px;margin-bottom:10px}
+.mode-btn{flex:1;padding:7px 8px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.mode-btn i{font-size:.88rem}
+.mode-btn.active{background:var(--surf);color:var(--g);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* Pills */
+.phase-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.phase-pills::-webkit-scrollbar{display:none}
+.ppill{padding:5px 11px;border-radius:20px;font-size:.72rem;font-weight:700;border:1.5px solid var(--bd);background:var(--surf);color:var(--t2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .12s;font-family:inherit}
+.ppill.active{background:var(--g);border-color:var(--g);color:#fff}
 </style>
 </head>
 <body>
@@ -42,8 +42,8 @@
 
   <div class="page-content" style="padding:0">
     <div class="pronos-layout" id="pronos-layout">
-      <div style="text-align:center;padding:40px 0;color:var(--t2)">
-        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:20px;height:20px;border-width:3px"></span>
+      <div style="display:flex;align-items:center;justify-content:center;height:100%">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:24px;height:24px;border-width:3px"></span>
       </div>
     </div>
   </div>
@@ -53,7 +53,9 @@
 
 <script src="app.js"></script>
 <script>
+let filterMode = 'groupe'; // 'groupe' | 'date'
 let activePhase = 'Groupe A';
+let activeDate  = '';
 
 (async function(){
   if(!requireUser())return;
@@ -63,70 +65,151 @@ let activePhase = 'Groupe A';
     st = await sbReadAll();
     setSyncBadge(true);
     buildLayout();
-    startPolling(()=>{updatePronos(activePhase);});
+    startPolling(()=>{ updateMatches(); });
   }catch(e){
     setSyncBadge(false);
-    document.getElementById('pronos-layout').innerHTML=
+    document.getElementById('pronos-layout').innerHTML =
       '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
   }
 })();
 
+/* ── Format date ── */
+function fmtDate(d){
+  if(!d)return d;
+  const mois=['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+  const parts=d.split('-');
+  return parts[2]+' '+mois[parseInt(parts[1])-1];
+}
+
+/* ── Construit toute la zone filtre + liste ── */
 function buildLayout(){
+  const matches = getMatches();
+
+  // Phases disponibles
   const grouped={};
-  getMatches().forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-  const availablePhases=PHASES.filter(ph=>grouped[ph]);
-  if(!availablePhases.includes(activePhase))activePhase=availablePhases[0]||PHASES[0];
+  matches.forEach(m=>{ if(!grouped[m.phase])grouped[m.phase]=[]; grouped[m.phase].push(m); });
+  const availablePhases = PHASES.filter(ph=>grouped[ph]);
+  if(!availablePhases.includes(activePhase)) activePhase = availablePhases[0]||'Groupe A';
 
-  const pillsHtml=availablePhases.map(ph=>
-    `<button class="ppill${ph===activePhase?' active':''}" onclick="switchPhase('${esc(ph)}')">${esc(ph)}</button>`
-  ).join('');
+  // Dates disponibles
+  const allDates = [...new Set(matches.map(m=>m.date).filter(Boolean))].sort();
+  if(!allDates.includes(activeDate)) activeDate = allDates[0]||'';
 
-  document.getElementById('pronos-layout').innerHTML=
-    `<div class="pills-zone">
+  const modeToggle = `<div class="mode-toggle">
+    <button class="mode-btn${filterMode==='groupe'?' active':''}" onclick="setMode('groupe')">
+      <i class="ti ti-layout-grid"></i> Par groupe
+    </button>
+    <button class="mode-btn${filterMode==='date'?' active':''}" onclick="setMode('date')">
+      <i class="ti ti-calendar"></i> Par date
+    </button>
+  </div>`;
+
+  const pillsHtml = filterMode==='groupe'
+    ? availablePhases.map(ph=>
+        `<button class="ppill${ph===activePhase?' active':''}" data-val="${esc(ph)}" onclick="switchGroup('${esc(ph)}')">${esc(ph)}</button>`
+      ).join('')
+    : allDates.map(d=>
+        `<button class="ppill${d===activeDate?' active':''}" data-val="${d}" onclick="switchDate('${d}')">${fmtDate(d)}</button>`
+      ).join('');
+
+  document.getElementById('pronos-layout').innerHTML =
+    `<div class="filter-zone">
       <div class="sec-title" style="margin-bottom:8px"><i class="ti ti-pencil"></i> Mes pronostics</div>
-      <div class="phase-pills" id="phase-pills">${pillsHtml}</div>
+      ${modeToggle}
+      <div class="phase-pills" id="filter-pills">${pillsHtml}</div>
     </div>
     <div class="matches-zone" id="matches-zone"></div>`;
 
-  updatePronos(activePhase);
+  updateMatches();
+
+  // Scroll la pill active en vue
+  setTimeout(()=>{
+    const activePill = document.querySelector('.ppill.active');
+    if(activePill) activePill.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+  }, 50);
 }
 
-function switchPhase(ph){
-  activePhase=ph;
-  // Update pills active state
-  document.querySelectorAll('.ppill').forEach(btn=>{
-    btn.classList.toggle('active',btn.textContent===ph);
+/* ── Changement de mode ── */
+function setMode(mode){
+  filterMode = mode;
+  buildLayout();
+}
+
+/* ── Changement de groupe ── */
+function switchGroup(ph){
+  activePhase = ph;
+  document.querySelectorAll('#filter-pills .ppill').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===ph);
   });
-  updatePronos(ph);
-  // Scroll matches to top
-  const zone=document.getElementById('matches-zone');
-  if(zone)zone.scrollTo(0,0);
+  scrollMatchesTop();
+  updateMatches();
 }
 
-function updatePronos(phase){
-  const zone=document.getElementById('matches-zone');
-  if(!zone)return;
-  const matches=getMatches().filter(m=>m.phase===phase);
-  const prons=getProns();
+/* ── Changement de date ── */
+function switchDate(d){
+  activeDate = d;
+  document.querySelectorAll('#filter-pills .ppill').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===d);
+  });
+  scrollMatchesTop();
+  updateMatches();
+}
+
+function scrollMatchesTop(){
+  const z = document.getElementById('matches-zone');
+  if(z) z.scrollTo(0,0);
+}
+
+/* ── Render la liste de matchs selon le filtre actif ── */
+function updateMatches(){
+  const zone = document.getElementById('matches-zone');
+  if(!zone) return;
+
+  let matches;
+  if(filterMode==='groupe'){
+    matches = getMatches().filter(m=>m.phase===activePhase);
+  } else {
+    matches = getMatches().filter(m=>m.date===activeDate);
+  }
+
   if(!matches.length){
-    zone.innerHTML='<div class="empty-state"><i class="ti ti-calendar-off"></i>Aucun match pour cette phase</div>';
+    zone.innerHTML = '<div class="empty-state"><i class="ti ti-calendar-off"></i>Aucun match</div>';
     return;
   }
-  zone.innerHTML=matches.map(m=>renderMatch(m,prons)).join('');
+
+  const prons = getProns();
+
+  if(filterMode==='date'){
+    // Regrouper par phase dans la vue par date
+    const grouped={};
+    matches.forEach(m=>{
+      if(!grouped[m.phase])grouped[m.phase]=[];
+      grouped[m.phase].push(m);
+    });
+    let html='';
+    PHASES.filter(ph=>grouped[ph]).forEach(ph=>{
+      html += `<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>${esc(ph)}</div>`;
+      html += grouped[ph].map(m=>renderMatch(m,prons)).join('');
+    });
+    zone.innerHTML = html;
+  } else {
+    zone.innerHTML = matches.map(m=>renderMatch(m,prons)).join('');
+  }
 }
 
+/* ── Rendu d'une carte match ── */
 function renderMatch(m,prons){
-  const key=user.id+'_'+m.id;
-  const p=prons[key]||{};
-  const ed=isEditable(m);
-  const played=m.homeScore!=null;
-  const pts=played?calcPts(p,m):null;
-  const ptsCls=pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
-  const ptsChip=pts!==null?`<span class="pts-chip ${ptsCls}">${pts}pt${pts!==1?'s':''}</span>`:'';
-  const realSc=played?`<span style="font-size:.67rem;color:var(--t2);margin-left:3px">(${m.homeScore}–${m.awayScore})</span>`:'';
+  const key  = user.id+'_'+m.id;
+  const p    = prons[key]||{};
+  const ed   = isEditable(m);
+  const played = m.homeScore!=null;
+  const pts  = played ? calcPts(p,m) : null;
+  const cls  = pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
+  const chip = pts!==null ? `<span class="pts-chip ${cls}">${pts}pt${pts!==1?'s':''}</span>` : '';
+  const real = played ? `<span style="font-size:.67rem;color:var(--t2);margin-left:3px">(${m.homeScore}–${m.awayScore})</span>` : '';
 
   if(ed){
-    return`<div class="match-card">
+    return `<div class="match-card">
       <div class="match-meta">
         <i class="ti ti-calendar" style="font-size:.75rem"></i>
         ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}
@@ -136,25 +219,23 @@ function renderMatch(m,prons){
         <div class="score-grp">
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.homeScore!=null?p.homeScore:''}" placeholder="?"
-            onchange="savePron('${m.id}','home',this.value)"
-            id="ph-${m.id}">
+            onchange="savePron('${m.id}','home',this.value)" id="ph-${m.id}">
           <span class="ssep">–</span>
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.awayScore!=null?p.awayScore:''}" placeholder="?"
-            onchange="savePron('${m.id}','away',this.value)"
-            id="pa-${m.id}">
+            onchange="savePron('${m.id}','away',this.value)" id="pa-${m.id}">
         </div>
         <div class="team">${esc(m.away)}</div>
       </div>
     </div>`;
-  }else{
-    const scoreDisp=p.homeScore!=null
-      ?`<span class="sval">${p.homeScore}–${p.awayScore}</span>`
-      :`<span class="sval" style="color:var(--t2);font-size:.85rem">–</span>`;
-    return`<div class="match-card${played?' played':' locked'}">
+  } else {
+    const scoreDisp = p.homeScore!=null
+      ? `<span class="sval">${p.homeScore}–${p.awayScore}</span>`
+      : `<span class="sval" style="color:var(--t2);font-size:.85rem">–</span>`;
+    return `<div class="match-card${played?' played':' locked'}">
       <div class="match-meta">
         <i class="ti ti-lock" style="font-size:.75rem"></i>
-        ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}${ptsChip}${realSc}
+        ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}${chip}${real}
       </div>
       <div class="match-body">
         <div class="team">${esc(m.home)}</div>
@@ -165,19 +246,20 @@ function renderMatch(m,prons){
   }
 }
 
+/* ── Sauvegarde ── */
 async function savePron(mid,side,val){
-  const pid=user.id;
-  const key=pid+'_'+mid;
-  if(!st.pronostics)st.pronostics={};
-  const cur=st.pronostics[key]||{};
-  const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
-  upd[side+'Score']=val===''?null:+val;
-  st.pronostics[key]=upd;
-  if(upd.homeScore!=null&&upd.awayScore!=null){
+  const pid = user.id;
+  const key = pid+'_'+mid;
+  if(!st.pronostics) st.pronostics={};
+  const cur = st.pronostics[key]||{};
+  const upd = {...cur, participantId:pid, matchId:mid, homeScore:cur.homeScore??null, awayScore:cur.awayScore??null};
+  upd[side+'Score'] = val===''?null:+val;
+  st.pronostics[key] = upd;
+  if(upd.homeScore!=null && upd.awayScore!=null){
     try{
       await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
       toast('Pronostic sauvegardé ✓','ok');
-    }catch(e){toast(e.message,'ko')}
+    }catch(e){ toast(e.message,'ko'); }
   }
 }
 </script>

@@ -13,6 +13,7 @@ const TABS = [
   {id:'pronos',href:'pronos.html',icon:'ti-pencil',label:'Pronos'},
   {id:'bonus',href:'bonus.html',icon:'ti-star',label:'Bonus'},
   {id:'resultats',href:'resultats.html',icon:'ti-list-details',label:'Résultats'},
+  {id:'regles',href:'regles.html',icon:'ti-book',label:'Règles'},
   {id:'admin',href:'admin.html',icon:'ti-shield-check',label:'Admin',adminOnly:true}
 ];
 
