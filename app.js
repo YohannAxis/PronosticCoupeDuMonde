@@ -9,12 +9,15 @@ const SBQ = [
 const PHASES = ['Groupe A','Groupe B','Groupe C','Groupe D','Groupe E','Groupe F','Groupe G','Groupe H','Groupe I','Groupe J','Groupe K','Groupe L','16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
 const COLORS = ['#16a34a','#2563eb','#7c3aed','#dc2626','#0891b2','#d97706','#9333ea','#0369a1','#b45309','#0f766e'];
 const TABS = [
+  // Onglets joueurs
   {id:'classement',href:'classement.html',icon:'ti-trophy',label:'Classement'},
   {id:'pronos',href:'pronos.html',icon:'ti-pencil',label:'Pronos'},
   {id:'bonus',href:'bonus.html',icon:'ti-star',label:'Bonus'},
   {id:'resultats',href:'resultats.html',icon:'ti-list-details',label:'Résultats'},
   {id:'regles',href:'regles.html',icon:'ti-book',label:'Règles'},
-  {id:'admin',href:'admin.html',icon:'ti-shield-check',label:'Admin',adminOnly:true}
+  // Onglets admin uniquement
+  {id:'admin',href:'admin.html',icon:'ti-settings-2',label:'Scores',adminOnly:true},
+  {id:'admin-users',href:'admin-users.html',icon:'ti-users',label:'Joueurs',adminOnly:true}
 ];
 
 // State
@@ -143,10 +146,13 @@ function setSyncBadge(ok){
 // Nav
 function buildNav(currentId){
   const nav=document.getElementById('bottom-nav');if(!nav)return;
-  nav.innerHTML=TABS.filter(t=>!t.adminOnly||admin)
+  // Admin voit seulement les onglets admin, les joueurs voient seulement les onglets joueurs
+  const visible=TABS.filter(t=>admin ? !!t.adminOnly : !t.adminOnly);
+  nav.innerHTML=visible
     .map(t=>`<a class="nav-btn${t.id===currentId?' active':''}" href="${t.href}"><i class="ti ${t.icon}"></i><span>${t.label}</span></a>`)
     .join('');
 }
+function genId(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function updateUserBadge(){
   const b=document.getElementById('user-badge');if(!b)return;
   if(admin){b.innerHTML='<i class="ti ti-shield-check"></i> Admin';b.className='badge b-admin'}

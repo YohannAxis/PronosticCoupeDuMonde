@@ -102,7 +102,7 @@
 
         <div class="info-banner banner-gold" style="margin-top:10px">
           <i class="ti ti-lock"></i>
-          <span>Les bonus se verrouillent au coup d'envoi du <strong>premier match (11 juin)</strong>. Tu peux aussi les verrouiller manuellement avant. Une fois verrouillés, aucune modification n'est possible.</span>
+          <span>Les bonus se verrouillent <strong>dès le coup d'envoi du premier match — le 11 juin 2026 à 15h00</strong>. Après cette heure, aucune modification n'est possible, même si tu n'as pas tout rempli. Tu peux aussi les verrouiller manuellement avant cette date via l'onglet Bonus.</span>
         </div>
       </div>
 
@@ -112,20 +112,25 @@
           <i class="ti ti-lock" style="color:var(--g)"></i> Verrouillage des pronostics
         </div>
 
-        <p style="font-size:.84rem;line-height:1.65;color:var(--t)">
-          Chaque pronostic est automatiquement verrouillé <strong>1 jour avant le match</strong>. Passé ce délai, il n'est plus possible de le modifier.
+        <p style="font-size:.84rem;line-height:1.65;color:var(--t);margin-bottom:10px">
+          Chaque pronostic est automatiquement verrouillé <strong>la veille du match à minuit</strong> (soit 24h avant le coup d'envoi). Passé ce délai, le score saisi ne peut plus être modifié et un pronostic non renseigné restera à 0 point.
         </p>
 
-        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="info-banner banner-green" style="margin-bottom:10px">
+          <i class="ti ti-info-circle"></i>
+          <span><strong>Exemple :</strong> le match France vs Sénégal débute le 16 juin à 15h00 — tu dois avoir entré ton pronostic avant le 15 juin à 23h59.</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div style="background:var(--g-l);border:1.5px solid var(--bd2);border-radius:var(--r-sm);padding:10px;text-align:center">
             <div style="font-size:1.2rem;margin-bottom:4px">✏️</div>
             <div style="font-size:.72rem;font-weight:700;color:var(--g-d)">Modifiable</div>
-            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">Plus de 24h avant le match</div>
+            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">J–2 ou plus avant le match</div>
           </div>
           <div style="background:#fafafa;border:1.5px solid var(--bd);border-radius:var(--r-sm);padding:10px;text-align:center;opacity:.75">
             <div style="font-size:1.2rem;margin-bottom:4px">🔒</div>
             <div style="font-size:.72rem;font-weight:700;color:var(--t2)">Verrouillé</div>
-            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">Moins de 24h avant le match</div>
+            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">La veille du match (J–1)</div>
           </div>
         </div>
       </div>

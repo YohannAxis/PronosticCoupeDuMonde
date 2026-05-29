@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Joueurs</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+/* Formulaire ajout */
+.add-form{display:flex;gap:8px;align-items:stretch}
+.add-form input{flex:1;min-width:0}
+.add-form button{flex-shrink:0}
+
+/* Ligne participant */
+.user-row{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:7px}
+.user-row.warn{border-color:#fca5a5;background:#fff5f5}
+.user-ava{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-weight:600;font-size:.88rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-tags{display:flex;gap:5px;flex-wrap:wrap}
+
+/* Barre de progression */
+.prog-wrap{display:flex;align-items:center;gap:7px;margin-top:5px}
+.prog-bg{flex:1;height:5px;background:var(--bd);border-radius:3px;overflow:hidden}
+.prog-fill{height:5px;border-radius:3px;transition:width .4s ease}
+.prog-label{font-size:.68rem;font-weight:700;white-space:nowrap;flex-shrink:0}
+
+/* Stats summary */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat-box{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-sm);padding:10px;text-align:center}
+.stat-num{font-size:1.4rem;font-weight:800;color:var(--g);line-height:1}
+.stat-lbl{font-size:.68rem;color:var(--t2);margin-top:3px;font-weight:500}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" id="page-content">
+    <div class="page-content-inner" id="content-inner">
+      <div style="display:flex;align-items:center;justify-content:center;min-height:200px">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:24px;height:24px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async function(){
+  if(!requireUser())return;
+  if(!admin){ window.location.replace('classement.html'); return; }
+  updateUserBadge();
+  buildNav('admin-users');
+  try{
+    st = await sbReadAll();
+    setSyncBadge(true);
+    render();
+    startPolling(render);
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('content-inner').innerHTML =
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+function render(){
+  const parts      = getParts();
+  const prons      = getProns();
+  const bonus      = getBonus();
+  const totalM     = getMatches().length;
+  const totalParts = parts.length;
+
+  // Stats globales
+  const noPronos   = parts.filter(p=>{
+    return getMatches().filter(m=>{ const k=p.id+'_'+m.id; return prons[k]&&prons[k].homeScore!=null; }).length===0;
+  }).length;
+  const bonusLocked = parts.filter(p=>(bonus[p.id]||{})._locked===true).length;
+
+  const statsHtml = `<div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num">${totalParts}</div>
+      <div class="stat-lbl">Participants</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:${noPronos>0?'#ef4444':'var(--g)'}">${noPronos}</div>
+      <div class="stat-lbl">Sans pronostic</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">${bonusLocked}</div>
+      <div class="stat-lbl">Bonus verrouillés</div>
+    </div>
+  </div>`;
+
+  // Formulaire ajout
+  const addFormHtml = `<div class="card" style="margin-bottom:14px">
+    <div class="sec-title" style="margin-bottom:10px"><i class="ti ti-user-plus"></i> Ajouter un joueur</div>
+    <div class="add-form">
+      <input type="text" id="new-name" placeholder="Prénom du joueur…" maxlength="40"
+        onkeydown="if(event.key==='Enter')addUser()">
+      <button class="btn btn-primary" onclick="addUser()" style="white-space:nowrap">
+        <i class="ti ti-plus"></i> Ajouter
+      </button>
+    </div>
+    <p id="add-err" style="color:#ef4444;font-size:.78rem;margin-top:6px;display:none"></p>
+  </div>`;
+
+  // Liste joueurs, triés par pronos remplis (croissant — les vides en premier)
+  const partsWithStats = parts.map((p, i)=>{
+    const filled = getMatches().filter(m=>{
+      const k = p.id+'_'+m.id;
+      return prons[k] && prons[k].homeScore!=null;
+    }).length;
+    const userBonus  = bonus[p.id]||{};
+    const bonusFilled = SBQ.filter(q=>userBonus[q.id]).length;
+    const bonusIsLocked = userBonus._locked===true;
+    return {p, filled, bonusFilled, bonusIsLocked, color: COLORS[i%COLORS.length]};
+  }).sort((a,b)=>a.filled-b.filled||a.p.name.localeCompare(b.p.name));
+
+  const rowsHtml = partsWithStats.map(({p, filled, bonusFilled, bonusIsLocked, color})=>{
+    const pct  = totalM>0 ? Math.round(filled/totalM*100) : 0;
+    const warn = filled===0;
+
+    // Couleur barre progression
+    const barColor = pct===0?'#ef4444':pct<50?'#eab308':'#16a34a';
+
+    // Badge bonus
+    let bonusBadge;
+    if(bonusIsLocked){
+      bonusBadge = `<span class="badge" style="background:var(--gold-l);color:#854d0e;font-size:.6rem"><i class="ti ti-lock" style="font-size:.65rem"></i> Bonus verrouillé</span>`;
+    }else if(bonusFilled>0){
+      bonusBadge = `<span class="badge b-blue" style="font-size:.6rem">${bonusFilled}/3 bonus</span>`;
+    }else{
+      bonusBadge = `<span class="badge" style="background:var(--bg);color:var(--t2);border:1px solid var(--bd);font-size:.6rem">0 bonus</span>`;
+    }
+
+    // Badge pronos
+    const pronosBadge = warn
+      ? `<span class="badge b-red" style="font-size:.6rem">⚠ Aucun pronostic</span>`
+      : pct<50
+        ? `<span class="badge b-gold" style="font-size:.6rem">${filled}/${totalM} pronos</span>`
+        : `<span class="badge b-green" style="font-size:.6rem">${filled}/${totalM} pronos</span>`;
+
+    return `<div class="user-row${warn?' warn':''}">
+      <div class="user-ava" style="background:${color}">${esc(getInitials(p.name))}</div>
+      <div class="user-info">
+        <div class="user-name">${esc(p.name)}</div>
+        <div class="user-tags">${pronosBadge}${bonusBadge}</div>
+        <div class="prog-wrap">
+          <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${barColor}"></div></div>
+          <span class="prog-label" style="color:${barColor}">${pct}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('content-inner').innerHTML =
+    `<div class="sec-title"><i class="ti ti-users"></i> Gestion des joueurs</div>
+    ${statsHtml}
+    ${addFormHtml}
+    <div class="sec-title" style="margin-bottom:10px;font-size:.85rem">
+      <i class="ti ti-list"></i> Participants (${totalParts})
+    </div>
+    ${rowsHtml||'<div class="empty-state"><i class="ti ti-users-off"></i>Aucun participant</div>'}`;
+}
+
+async function addUser(){
+  const input  = document.getElementById('new-name');
+  const errEl  = document.getElementById('add-err');
+  const name   = input.value.trim();
+  errEl.style.display='none';
+
+  if(!name){ errEl.textContent='Entrez un prénom.'; errEl.style.display='block'; return; }
+
+  // Doublon ?
+  const exists = getParts().some(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(exists){ errEl.textContent='Ce participant existe déjà.'; errEl.style.display='block'; return; }
+
+  const btn = document.querySelector('.add-form button');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+
+  try{
+    const id = genId();
+    await sbUpsert('participants',{id, name});
+    // Mettre à jour l'état local
+    if(!st.participants)st.participants={};
+    st.participants[id]={id,name};
+    input.value='';
+    toast(`${name} ajouté ✓`,'ok');
+    render();
+  }catch(e){
+    errEl.textContent=e.message;
+    errEl.style.display='block';
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<i class="ti ti-plus"></i> Ajouter';
+  }
+}
+</script>
+</body>
+</html>

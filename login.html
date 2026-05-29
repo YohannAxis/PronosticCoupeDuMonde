@@ -152,7 +152,7 @@ function doAdminLogin(){
   const pwd = document.getElementById('li-pwd').value;
   if(pwd===st.settings?.adminPwd){
     setUser({id:'admin',name:'Admin'}, true);
-    window.location.href='classement.html';
+    window.location.href='admin.html';
   }else{
     errEl.textContent='Mot de passe incorrect.';
     errEl.style.display='block';
