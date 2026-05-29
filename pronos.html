@@ -9,37 +9,47 @@
 <link rel="stylesheet" href="style.css">
 <style>
 .pronos-layout{display:flex;flex-direction:column;height:100%}
-.filter-zone{flex-shrink:0;padding:10px 14px 4px;background:var(--bg)}
-.matches-zone{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 14px calc(var(--nav-h) + 14px)}
+.filter-zone{flex-shrink:0;padding:10px 14px 6px;background:var(--bg)}
+.matches-zone{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 14px calc(var(--nav-h)+14px)}
 .matches-zone::-webkit-scrollbar{width:4px}
 .matches-zone::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 
-/* Onglets principaux À jouer / Terminés */
+/* Onglets principaux */
 .main-tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:10px}
 .mtab{flex:1;padding:9px 4px;font-size:.8rem;font-weight:700;cursor:pointer;border:none;background:none;color:var(--t2);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s}
 .mtab i{font-size:.95rem}
 .mtab.active{color:var(--g);border-bottom-color:var(--g)}
-.mtab .count{background:var(--bd);color:var(--t2);font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px}
-.mtab.active .count{background:var(--g-l);color:var(--g-d)}
+.mtab .cnt{background:var(--bd);color:var(--t2);font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:2px}
+.mtab.active .cnt{background:var(--g-l);color:var(--g-d)}
 
-/* Segmented control */
+/* Segmented control par date / par groupe */
 .mode-toggle{display:flex;background:var(--bd);border-radius:10px;padding:3px;margin-bottom:10px}
 .mode-btn{flex:1;padding:7px 8px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
 .mode-btn i{font-size:.88rem}
 .mode-btn.active{background:var(--surf);color:var(--g);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 
-/* Pills */
-.phase-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+/* Navigation par date ← → */
+.date-nav{display:flex;align-items:center;gap:6px;background:var(--surf);border:1.5px solid var(--bd);border-radius:var(--r-sm);padding:6px 8px;margin-bottom:4px}
+.date-nav.closed{border-color:#fca5a5;background:#fff5f5}
+.dnav-btn{background:var(--bg);border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:all .15s}
+.dnav-btn:hover:not(:disabled){background:var(--g-l);border-color:var(--g);color:var(--g)}
+.dnav-btn:disabled{opacity:.3;cursor:default}
+.dnav-center{flex:1;text-align:center;min-width:0}
+.dnav-date{font-size:.95rem;font-weight:700;color:var(--t)}
+.dnav-date.closed{color:#dc2626}
+.dnav-sub{font-size:.7rem;color:var(--t2);margin-top:1px}
+.dnav-progress{font-size:.68rem;color:var(--t2);margin-top:1px}
+
+/* Pills pour le mode groupe */
+.phase-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;margin-bottom:4px}
 .phase-pills::-webkit-scrollbar{display:none}
 .ppill{padding:5px 11px;border-radius:20px;font-size:.72rem;font-weight:700;border:1.5px solid var(--bd);background:var(--surf);color:var(--t2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .12s;font-family:inherit}
 .ppill.active{background:var(--g);border-color:var(--g);color:#fff}
-.ppill.closed{border-color:#fca5a5;color:#dc2626}
-.ppill.active.closed{background:#dc2626;border-color:#dc2626;color:#fff}
 
 /* Bannière date fermée */
 .closed-banner{background:#fee2e2;border:1.5px solid #fca5a5;border-radius:var(--r-sm);padding:9px 12px;margin-bottom:8px;font-size:.78rem;color:#991b1b;display:flex;align-items:center;gap:7px}
 
-/* Résumé points terminés */
+/* Résumé terminés */
 .pts-summary{background:linear-gradient(135deg,var(--g-d),var(--g));border-radius:var(--r);padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;color:#fff}
 .pts-big{font-size:2.5rem;font-weight:800;line-height:1;flex-shrink:0}
 .pts-info-title{font-size:.88rem;font-weight:700;margin-bottom:2px}
@@ -47,17 +57,16 @@
 
 /* Carte match terminé */
 .done-card{background:var(--surf);border:1px solid var(--bd);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:7px}
-.done-teams{font-weight:600;font-size:.85rem;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.done-score-real{font-size:1rem;font-weight:800;flex-shrink:0}
+.done-teams{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}
+.done-team-name{flex:1;font-weight:600;font-size:.82rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.done-team-name:last-child{text-align:right}
+.done-score{font-size:1rem;font-weight:800;flex-shrink:0;white-space:nowrap}
 .done-footer{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--t2)}
-.done-prono{display:flex;align-items:center;gap:5px}
-.done-prono span{background:var(--bg);border-radius:6px;padding:2px 8px;font-weight:600;color:var(--t)}
-.done-prono em{font-style:italic}
+.done-prono-val{background:var(--bg);border-radius:5px;padding:2px 7px;font-weight:600;color:var(--t);font-size:.72rem}
 </style>
 </head>
 <body>
 <div id="toast" class="toast"></div>
-
 <div class="page-wrap">
   <header class="app-hdr">
     <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
@@ -67,7 +76,6 @@
       <i class="ti ti-logout"></i>
     </button>
   </header>
-
   <div class="page-content" style="padding:0">
     <div class="pronos-layout" id="pronos-layout">
       <div style="display:flex;align-items:center;justify-content:center;height:100%">
@@ -75,16 +83,16 @@
       </div>
     </div>
   </div>
-
   <nav class="bottom-nav" id="bottom-nav"></nav>
 </div>
 
 <script src="app.js"></script>
 <script>
-let mainTab = 'ajouer';   // 'ajouer' | 'termines'
-let filterMode = 'date';  // 'date' | 'groupe' — par date en premier
+let mainTab   = 'ajouer'; // 'ajouer' | 'termines'
+let filterMode= 'date';   // 'date' | 'groupe'
 let activePhase = 'Groupe A';
 let activeDate  = '';
+let allDates    = [];      // liste globale des dates disponibles
 
 (async function(){
   if(!requireUser())return;
@@ -94,7 +102,7 @@ let activeDate  = '';
     st = await sbReadAll();
     setSyncBadge(true);
     buildLayout();
-    startPolling(()=>{ renderMatches(); });
+    startPolling(renderMatches);
   }catch(e){
     setSyncBadge(false);
     document.getElementById('pronos-layout').innerHTML =
@@ -102,18 +110,20 @@ let activeDate  = '';
   }
 })();
 
-/* ── Helpers ──────────────────────────────────────────────── */
-function fmtDate(d){
-  if(!d)return d;
-  const mois=['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
-  const p=d.split('-');
-  return p[2]+' '+mois[parseInt(p[1])-1];
+/* ── Formatage date ────────────────────────────────────────── */
+const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const MOIS_COURT = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
+function fmtDateLong(d){
+  if(!d)return '';
+  const [,m,j]=d.split('-');
+  return `${+j} ${MOIS[parseInt(m)-1]}`;
+}
+function fmtDateCourt(d){
+  if(!d)return '';
+  const [,m,j]=d.split('-');
+  return `${+j} ${MOIS_COURT[parseInt(m)-1]}`;
 }
 function isDateClosed(d){ return d && today() >= d; }
-// Compte les matchs à jouer (non terminés)
-function countPending(){ return getMatches().filter(m=>m.homeScore==null).length; }
-function countDone(){ return getMatches().filter(m=>m.homeScore!=null).length; }
-// Date la plus pertinente : aujourd'hui ou prochaine date avec matchs non joués
 function bestDate(dates){
   const t=today();
   if(dates.includes(t))return t;
@@ -122,118 +132,126 @@ function bestDate(dates){
   return dates[dates.length-1]||'';
 }
 
-/* ── Construction du layout ───────────────────────────────── */
+/* ── Construction du layout ────────────────────────────────── */
 function buildLayout(){
-  const allM = getMatches();
-  const pending = allM.filter(m=>m.homeScore==null);
-  const done    = allM.filter(m=>m.homeScore!=null);
+  const pending = getMatches().filter(m=>m.homeScore==null);
+  const done    = getMatches().filter(m=>m.homeScore!=null);
 
-  // Compter pour les badges
-  const nPending = pending.length;
-  const nDone    = done.length;
-
-  // Onglets principaux
-  const mainTabsHtml=`<div class="main-tabs">
+  const mainTabsHtml = `<div class="main-tabs">
     <button class="mtab${mainTab==='ajouer'?' active':''}" onclick="switchMain('ajouer')">
-      <i class="ti ti-pencil"></i> À jouer
-      <span class="count">${nPending}</span>
+      <i class="ti ti-pencil"></i> À jouer<span class="cnt">${pending.length}</span>
     </button>
     <button class="mtab${mainTab==='termines'?' active':''}" onclick="switchMain('termines')">
-      <i class="ti ti-check"></i> Terminés
-      <span class="count">${nDone}</span>
+      <i class="ti ti-check"></i> Terminés<span class="cnt">${done.length}</span>
     </button>
   </div>`;
 
   if(mainTab==='termines'){
     document.getElementById('pronos-layout').innerHTML=
       `<div class="filter-zone">${mainTabsHtml}</div>
-      <div class="matches-zone" id="matches-zone"></div>`;
+       <div class="matches-zone" id="matches-zone"></div>`;
     renderDone();
     return;
   }
 
-  // Mode "À jouer" : filtres + pills
-  // Construire dates / phases disponibles (seulement matchs non joués)
-  const grouped={};
-  pending.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-  const availPhases = PHASES.filter(ph=>grouped[ph]);
-  if(!availPhases.includes(activePhase)) activePhase = availPhases[0]||'Groupe A';
-
-  const allDates = [...new Set(pending.map(m=>m.date).filter(Boolean))].sort();
-  if(!allDates.includes(activeDate)) activeDate = bestDate(allDates);
-
-  const modeToggle=`<div class="mode-toggle">
-    <button class="mode-btn${filterMode==='date'?' active':''}" onclick="setMode('date')">
-      <i class="ti ti-calendar"></i> Par date
-    </button>
-    <button class="mode-btn${filterMode==='groupe'?' active':''}" onclick="setMode('groupe')">
-      <i class="ti ti-layout-grid"></i> Par groupe
-    </button>
-  </div>`;
-
-  const pillsHtml = filterMode==='date'
-    ? allDates.map(d=>{
-        const closed=isDateClosed(d);
-        return`<button class="ppill${d===activeDate?' active':''}${closed?' closed':''}"
-          data-val="${d}" onclick="switchDate('${d}')">${fmtDate(d)}${closed?' 🔒':''}</button>`;
-      }).join('')
-    : availPhases.map(ph=>
-        `<button class="ppill${ph===activePhase?' active':''}"
-          data-val="${esc(ph)}" onclick="switchGroup('${esc(ph)}')">${esc(ph)}</button>`
-      ).join('');
-
   if(!pending.length){
     document.getElementById('pronos-layout').innerHTML=
       `<div class="filter-zone">${mainTabsHtml}</div>
-      <div class="matches-zone">
-        <div class="empty-state"><i class="ti ti-trophy"></i>Tous les matchs sont terminés !</div>
-      </div>`;
+       <div class="matches-zone"><div class="empty-state"><i class="ti ti-trophy"></i>Tous les matchs sont terminés !</div></div>`;
     return;
   }
 
-  document.getElementById('pronos-layout').innerHTML=
-    `<div class="filter-zone">
-      ${mainTabsHtml}
-      ${modeToggle}
-      <div class="phase-pills" id="filter-pills">${pillsHtml}</div>
-    </div>
-    <div class="matches-zone" id="matches-zone"></div>`;
+  /* ── Mode "par date" ─────────────────────────────────────── */
+  if(filterMode==='date'){
+    // Toutes les dates qui ont encore des matchs à jouer
+    allDates = [...new Set(pending.map(m=>m.date).filter(Boolean))].sort();
+    if(!allDates.includes(activeDate)) activeDate = bestDate(allDates);
+
+    const idx     = allDates.indexOf(activeDate);
+    const closed  = isDateClosed(activeDate);
+    const nToday  = pending.filter(m=>m.date===activeDate).length;
+    const total   = allDates.length;
+
+    const dateNavHtml = `<div class="date-nav${closed?' closed':''}">
+      <button class="dnav-btn" onclick="prevDate()" ${idx<=0?'disabled':''}>
+        <i class="ti ti-chevron-left"></i>
+      </button>
+      <div class="dnav-center">
+        <div class="dnav-date${closed?' closed':''}">${fmtDateLong(activeDate)}</div>
+        <div class="dnav-sub">${nToday} match${nToday>1?'s':''} · jour ${idx+1}/${total}${closed?' · 🔒 Fermé':''}</div>
+      </div>
+      <button class="dnav-btn" onclick="nextDate()" ${idx>=allDates.length-1?'disabled':''}>
+        <i class="ti ti-chevron-right"></i>
+      </button>
+    </div>`;
+
+    document.getElementById('pronos-layout').innerHTML=
+      `<div class="filter-zone">
+        ${mainTabsHtml}
+        <div class="mode-toggle">
+          <button class="mode-btn active"><i class="ti ti-calendar"></i> Par date</button>
+          <button class="mode-btn" onclick="setMode('groupe')"><i class="ti ti-layout-grid"></i> Par groupe</button>
+        </div>
+        ${dateNavHtml}
+       </div>
+       <div class="matches-zone" id="matches-zone"></div>`;
+
+  /* ── Mode "par groupe" ───────────────────────────────────── */
+  }else{
+    const grouped={};
+    pending.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+    const availPhases = PHASES.filter(ph=>grouped[ph]);
+    if(!availPhases.includes(activePhase)) activePhase = availPhases[0]||'Groupe A';
+
+    const pillsHtml = availPhases.map(ph=>
+      `<button class="ppill${ph===activePhase?' active':''}" data-val="${esc(ph)}" onclick="switchGroup('${esc(ph)}')">${esc(ph)}</button>`
+    ).join('');
+
+    document.getElementById('pronos-layout').innerHTML=
+      `<div class="filter-zone">
+        ${mainTabsHtml}
+        <div class="mode-toggle">
+          <button class="mode-btn" onclick="setMode('date')"><i class="ti ti-calendar"></i> Par date</button>
+          <button class="mode-btn active"><i class="ti ti-layout-grid"></i> Par groupe</button>
+        </div>
+        <div class="phase-pills" id="filter-pills">${pillsHtml}</div>
+       </div>
+       <div class="matches-zone" id="matches-zone"></div>`;
+
+    setTimeout(()=>{
+      const a=document.querySelector('.ppill.active');
+      if(a)a.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
+    },40);
+  }
 
   renderMatches();
-
-  // Scroll la pill active en vue
-  setTimeout(()=>{
-    const a=document.querySelector('.ppill.active');
-    if(a)a.scrollIntoView({behavior:'auto',inline:'center',block:'nearest'});
-  },50);
 }
 
-/* ── Changements d'onglet / mode ─────────────────────────── */
-function switchMain(tab){
-  mainTab=tab;
-  buildLayout();
-  document.getElementById('matches-zone')?.scrollTo(0,0);
+/* ── Navigation dates ←→ ──────────────────────────────────── */
+function prevDate(){
+  const idx=allDates.indexOf(activeDate);
+  if(idx>0){ activeDate=allDates[idx-1]; buildLayout(); }
 }
-function setMode(mode){filterMode=mode;buildLayout();}
+function nextDate(){
+  const idx=allDates.indexOf(activeDate);
+  if(idx<allDates.length-1){ activeDate=allDates[idx+1]; buildLayout(); }
+}
+
+/* ── Changements mode / onglet ────────────────────────────── */
+function switchMain(tab){ mainTab=tab; buildLayout(); }
+function setMode(mode){ filterMode=mode; buildLayout(); }
 function switchGroup(ph){
   activePhase=ph;
   document.querySelectorAll('#filter-pills .ppill').forEach(b=>b.classList.toggle('active',b.dataset.val===ph));
   document.getElementById('matches-zone')?.scrollTo(0,0);
   renderMatches();
 }
-function switchDate(d){
-  activeDate=d;
-  document.querySelectorAll('#filter-pills .ppill').forEach(b=>b.classList.toggle('active',b.dataset.val===d));
-  document.getElementById('matches-zone')?.scrollTo(0,0);
-  renderMatches();
-}
 
-/* ── Render liste "À jouer" ──────────────────────────────── */
+/* ── Render matches "À jouer" ─────────────────────────────── */
 function renderMatches(){
   const zone=document.getElementById('matches-zone');
   if(!zone)return;
 
-  // Matchs non joués seulement
   let matches;
   if(filterMode==='date'){
     matches=getMatches().filter(m=>m.homeScore==null&&m.date===activeDate);
@@ -253,18 +271,19 @@ function renderMatches(){
   if(filterMode==='date'&&isDateClosed(activeDate)){
     html+=`<div class="closed-banner">
       <i class="ti ti-lock"></i>
-      <span>Pronostics <strong>fermés</strong> — matchs du ${fmtDate(activeDate)} déjà passés.</span>
+      <strong>Pronostics fermés</strong> — le ${fmtDateLong(activeDate)} est passé.
     </div>`;
   }
 
-  // En mode date, grouper par phase si plusieurs phases ce jour-là
+  // En mode date, grouper par phase si plusieurs phases le même jour
   if(filterMode==='date'){
-    const grouped={};
-    matches.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-    PHASES.filter(ph=>grouped[ph]).forEach(ph=>{
-      if(Object.keys(grouped).length>1)
+    const grp={};
+    matches.forEach(m=>{if(!grp[m.phase])grp[m.phase]=[];grp[m.phase].push(m)});
+    const phases=PHASES.filter(ph=>grp[ph]);
+    phases.forEach(ph=>{
+      if(phases.length>1)
         html+=`<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>${esc(ph)}</div>`;
-      html+=grouped[ph].map(m=>renderMatchCard(m,prons)).join('');
+      html+=grp[ph].map(m=>renderMatchCard(m,prons)).join('');
     });
   }else{
     html+=matches.map(m=>renderMatchCard(m,prons)).join('');
@@ -273,13 +292,12 @@ function renderMatches(){
   zone.innerHTML=html;
 }
 
-/* ── Render une carte match "À jouer" ─────────────────────── */
+/* ── Carte match individuelle ─────────────────────────────── */
 function renderMatchCard(m,prons){
   const key=user.id+'_'+m.id;
   const p=prons[key]||{};
   const ed=isEditable(m);
   const meta=`${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}`;
-
   if(ed){
     return`<div class="match-card">
       <div class="match-meta"><i class="ti ti-calendar" style="font-size:.75rem"></i>${meta}</div>
@@ -298,7 +316,6 @@ function renderMatchCard(m,prons){
       </div>
     </div>`;
   }else{
-    // Verrouillé mais pas encore joué
     const sc=p.homeScore!=null
       ?`<span class="sval">${p.homeScore}–${p.awayScore}</span>`
       :`<span class="sval" style="color:var(--t2);font-size:.82rem">–</span>`;
@@ -313,74 +330,60 @@ function renderMatchCard(m,prons){
   }
 }
 
-/* ── Render liste "Terminés" ─────────────────────────────── */
+/* ── Render "Terminés" ────────────────────────────────────── */
 function renderDone(){
   const zone=document.getElementById('matches-zone');
   if(!zone)return;
   const prons=getProns();
   const done=getMatches().filter(m=>m.homeScore!=null);
-
   if(!done.length){
     zone.innerHTML='<div class="empty-state"><i class="ti ti-clock"></i>Aucun match terminé pour l\'instant.</div>';
     return;
   }
-
-  // Calcul total des points
-  let totalPts=0;
-  done.forEach(m=>{
-    const p=prons[user.id+'_'+m.id];
-    const pts=calcPts(p,m);
-    if(pts)totalPts+=pts;
-  });
+  let total=0;
+  done.forEach(m=>{ const pts=calcPts(prons[user.id+'_'+m.id],m); if(pts)total+=pts; });
 
   let html=`<div class="pts-summary">
-    <div class="pts-big">${totalPts}</div>
+    <div class="pts-big">${total}</div>
     <div>
-      <div class="pts-info-title">pts sur ${done.length} match${done.length>1?'s':''} joué${done.length>1?'s':''}</div>
+      <div class="pts-info-title">points sur ${done.length} match${done.length>1?'s':''} joué${done.length>1?'s':''}</div>
       <div class="pts-info-sub">Pronostics de matchs terminés</div>
     </div>
   </div>`;
 
-  // Grouper par phase
-  const grouped={};
-  done.forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
-
-  PHASES.filter(ph=>grouped[ph]).forEach(ph=>{
+  const grp={};
+  done.forEach(m=>{if(!grp[m.phase])grp[m.phase]=[];grp[m.phase].push(m)});
+  PHASES.filter(ph=>grp[ph]).forEach(ph=>{
     html+=`<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>${esc(ph)}</div>`;
-    grouped[ph].forEach(m=>{
-      const key=user.id+'_'+m.id;
-      const p=prons[key]||{};
+    grp[ph].forEach(m=>{
+      const p=prons[user.id+'_'+m.id]||{};
       const pts=calcPts(p,m);
-      const ptsCls=pts===5?'p3':pts===3?'p2':pts===1?'p1':'p0';
-      const ptsLabel=pts!=null?`<span class="pts-chip ${ptsCls}">${pts}pt${pts!==1?'s':''}</span>`:'';
-      const pronoTxt=p.homeScore!=null
-        ?`<span>${p.homeScore}–${p.awayScore}</span>`
-        :`<em>Non renseigné</em>`;
-
+      const cls=pts===5?'p3':pts===3?'p2':pts===1?'p1':'p0';
+      const chip=pts!=null?`<span class="pts-chip ${cls}">${pts}pt${pts!==1?'s':''}</span>`:'';
+      const prono=p.homeScore!=null
+        ?`<span class="done-prono-val">${p.homeScore}–${p.awayScore}</span>`
+        :`<em style="color:var(--t2);font-size:.72rem">Non renseigné</em>`;
       html+=`<div class="done-card">
         <div class="done-teams">
-          <span>${teamLabel(m.home)}</span>
-          <span class="done-score-real">${m.homeScore} – ${m.awayScore}</span>
-          <span style="text-align:right">${teamLabel(m.away)}</span>
+          <div class="done-team-name">${teamLabel(m.home)}</div>
+          <span class="done-score">${m.homeScore} – ${m.awayScore}</span>
+          <div class="done-team-name">${teamLabel(m.away)}</div>
         </div>
         <div class="done-footer">
-          <span class="done-prono"><i class="ti ti-pencil" style="font-size:.75rem"></i> ${pronoTxt}</span>
           <span style="display:flex;align-items:center;gap:5px">
-            ${ptsLabel}
-            <span style="color:var(--t2);font-size:.67rem">${m.date}</span>
+            <i class="ti ti-pencil" style="font-size:.72rem"></i>${prono}
           </span>
+          <span style="display:flex;align-items:center;gap:5px">${chip}<span>${fmtDateCourt(m.date)}</span></span>
         </div>
       </div>`;
     });
   });
-
   zone.innerHTML=html;
 }
 
-/* ── Sauvegarde ──────────────────────────────────────────── */
+/* ── Sauvegarde ───────────────────────────────────────────── */
 async function savePron(mid,side,val){
-  const pid=user.id;
-  const key=pid+'_'+mid;
+  const pid=user.id, key=pid+'_'+mid;
   if(!st.pronostics)st.pronostics={};
   const cur=st.pronostics[key]||{};
   const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
