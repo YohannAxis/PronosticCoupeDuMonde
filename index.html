@@ -57,6 +57,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .ntab:hover{color:#fff}
 .ntab.active{color:var(--gold);border-bottom-color:var(--gold)}
 .content{flex:1;padding:16px;max-width:1200px;margin:0 auto;width:100%}
+@keyframes pgFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.content.anim{animation:pgFade .22s ease}
 .card{background:#fff;border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--sh);border:1px solid var(--border)}
 .card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .card-title{font-size:.95rem;font-weight:600;color:var(--green);display:flex;align-items:center;gap:7px}
@@ -516,6 +518,7 @@ function doLogout(){
   document.getElementById('app').hidden=true;
   document.getElementById('admin-box').style.display='none';
   document.getElementById('li-pwd').value='';
+  setPageUrl('login');
   document.getElementById('s-login').hidden=false;
 }
 
@@ -525,7 +528,11 @@ function enterApp(){
   const b=document.getElementById('u-badge');
   if(admin){b.innerHTML='<i class="ti ti-shield"></i> Admin';b.className='badge b-admin'}
   else{b.textContent=user.name;b.className='badge b-green'}
-  buildNav();switchTab('classement');startPolling();
+  buildNav();
+  const savedTab=new URLSearchParams(window.location.search).get('p');
+  const validTab=TABS.find(t=>t.id===savedTab&&(!t.adminOnly||admin));
+  switchTab(validTab?savedTab:'classement');
+  startPolling();
 }
 
 // ── SETUP ─────────────────────────────────────────────
@@ -567,12 +574,12 @@ function buildNav(){
   document.getElementById('nav').innerHTML=TABS.filter(t=>!t.adminOnly||admin)
     .map(t=>`<button class="ntab${t.id===tab?' active':''}" data-tab="${t.id}" onclick="switchTab('${t.id}')"><i class="ti ${t.icon}"></i>${t.label}</button>`).join('');
 }
-function switchTab(id){tab=id;document.querySelectorAll('.ntab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));renderTab()}
-function renderTab(){
-  const c=document.getElementById('content');if(!c)return;
-  ({classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,participants:rParts,matches:rMatches,'bonus-results':rBonusResults,settings:rSettings,regles:rRegles}[tab]||rClassement)();
-  // call render fn and assign html
-  c.innerHTML=({classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,participants:rParts,matches:rMatches,'bonus-results':rBonusResults,settings:rSettings,regles:rRegles}[tab]||rClassement)();
+function setPageUrl(p){const u=new URL(window.location);u.searchParams.set('p',p);window.history.pushState({p},null,u)}
+function switchTab(id,push=true){
+  tab=id;
+  if(push)setPageUrl(id);
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+  renderTabAnimated();
 }
 
 // ── CLASSEMENT ────────────────────────────────────────
@@ -925,12 +932,29 @@ async function init(){
   }
 }
 
-// fix: renderTab was calling the fn twice — patch
+function renderTabAnimated(){
+  const c=document.getElementById('content');if(!c)return;
+  const fns={classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,matches:rMatches,settings:rSettings,regles:rRegles};
+  c.classList.remove('anim');void c.offsetWidth;c.classList.add('anim');
+  c.innerHTML=(fns[tab]||rClassement)();
+}
 function renderTab(){
   const c=document.getElementById('content');if(!c)return;
   const fns={classement:rClassement,'mes-pronostics':rMesProns,'mes-bonus':rMesBonus,'tous-pronostics':rTousProns,resultats:rResultats,dashboard:rDashboard,matches:rMatches,settings:rSettings,regles:rRegles};
   c.innerHTML=(fns[tab]||rClassement)();
 }
+
+window.addEventListener('popstate',()=>{
+  const p=new URLSearchParams(window.location.search).get('p');
+  if(!user){
+    document.getElementById('app').hidden=true;
+    document.getElementById('s-login').hidden=false;
+    return;
+  }
+  if(!p||p==='login'){doLogout();return}
+  const validTab=TABS.find(t=>t.id===p&&(!t.adminOnly||admin));
+  if(validTab){tab=p;document.querySelectorAll('.ntab').forEach(b=>b.classList.toggle('active',b.dataset.tab===p));renderTabAnimated()}
+});
 
 document.getElementById('s-setup').hidden=true;
 document.getElementById('s-login').hidden=true;
