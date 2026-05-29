@@ -95,6 +95,31 @@ tr.me td{background:#f0fdf4;font-weight:600}
 hr.div{border:none;border-top:1px solid var(--border);margin:14px 0}
 tr.qual td{background:#f0fdf4}
 @media(max-width:640px){.auth-card{padding:20px}.content{padding:10px}.card{padding:13px}.gg{grid-template-columns:1fr}}
+/* Login page */
+.login-page{min-height:100vh;background:var(--green);padding:24px 16px}
+.login-hdr{text-align:center;color:#fff;padding:20px 0 28px}
+.login-hdr .tr{font-size:3rem;display:block;margin-bottom:10px}
+.login-hdr h1{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.login-hdr p{opacity:.75;font-size:.88rem}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;max-width:720px;margin:0 auto 24px}
+.pcard{background:#fff;border-radius:var(--r);padding:16px 10px;text-align:center;cursor:pointer;transition:all .15s;border:2px solid transparent;user-select:none}
+.pcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.25);border-color:var(--gold)}
+.pcard:active{transform:translateY(0)}
+.pavatar{width:46px;height:46px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;margin:0 auto 8px}
+.pname{font-size:.82rem;font-weight:600;color:var(--text);line-height:1.3}
+.pcard.padmin{background:var(--green-d);border-color:var(--gold)}
+.pcard.padmin .pavatar{background:var(--gold)}
+.pcard.padmin .pname{color:#fff}
+.admin-box{background:rgba(0,0,0,.25);border-radius:var(--r);padding:20px;max-width:360px;margin:0 auto;display:none}
+.admin-box label{color:rgba(255,255,255,.8);font-size:.82rem;margin-bottom:6px}
+.admin-box input{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+.admin-box input::placeholder{color:rgba(255,255,255,.4)}
+.admin-box input:focus{border-color:var(--gold);background:rgba(255,255,255,.2)}
+.admin-box .btn-primary{background:var(--gold)}
+.admin-box .btn-primary:hover{background:var(--gold-l)}
+.reconfig{text-align:center;margin-top:16px}
+.reconfig span{color:rgba(255,255,255,.5);font-size:.78rem;cursor:pointer;text-decoration:underline}
+.reconfig span:hover{color:rgba(255,255,255,.8)}
 </style>
 </head>
 <body>
@@ -144,23 +169,22 @@ create policy "all" on settings for all using (true) with check (true);</div>
 </div>
 
 <!-- LOGIN -->
-<div id="s-login" class="center" hidden>
-  <div class="auth-card">
-    <div class="logo">🏆</div>
+<div id="s-login" class="login-page" hidden>
+  <div class="login-hdr">
+    <span class="tr">🏆</span>
     <h1>Pronostics CDM 2026</h1>
-    <p class="sub">Connectez-vous avec votre prénom</p>
-    <div class="fg"><label>Votre prénom</label>
-      <input type="text" id="li-name" placeholder="Ex: Yohann" autocomplete="off"
-        oninput="onNameInput()" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div id="li-admin-sec" style="display:none">
-      <div class="fg"><label>Mot de passe admin</label>
-        <input type="password" id="li-pwd" placeholder="Mot de passe administrateur"
-          onkeydown="if(event.key==='Enter')doLogin()"></div>
-    </div>
-    <button class="btn btn-primary" onclick="doLogin()"><i class="ti ti-login"></i> Connexion</button>
-    <p id="li-err" class="err"></p>
-    <span class="link" onclick="showSetup()">⚙ Reconfigurer Supabase</span>
+    <p>Qui êtes-vous ?</p>
   </div>
+  <div id="login-grid" class="pgrid"></div>
+  <div id="admin-box" class="admin-box">
+    <div class="fg"><label>Mot de passe admin</label>
+      <input type="password" id="li-pwd" placeholder="Mot de passe…"
+        onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="doAdminLogin()"><i class="ti ti-shield"></i> Connexion admin</button>
+    <p id="li-err" class="err" style="color:#fca5a5"></p>
+  </div>
+  <div class="reconfig"><span onclick="showSetup()">⚙ Reconfigurer Supabase</span></div>
 </div>
 
 <!-- APP -->
@@ -425,36 +449,58 @@ function isBonusEditable(){
 }
 
 // ── AUTH ──────────────────────────────────────────────
-function onNameInput(){document.getElementById('li-admin-sec').style.display=document.getElementById('li-name').value.trim().toLowerCase()==='admin'?'block':'none'}
 function showSetup(){document.getElementById('s-login').hidden=true;document.getElementById('s-setup').hidden=false}
 
-async function doLogin(){
+function renderLoginScreen(){
+  const parts=getParts().sort((a,b)=>a.name.localeCompare(b.name));
+  const grid=document.getElementById('login-grid');
+  if(!grid)return;
+  // couleurs d'avatars cycliques
+  const colors=['#1B5E35','#2D7A4F','#0F3D22','#1e40af','#7c3aed','#b45309','#dc2626','#0891b2','#047857','#9333ea'];
+  grid.innerHTML=parts.map((p,i)=>{
+    const initials=p.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const color=colors[i%colors.length];
+    return`<div class="pcard" onclick="selectUser('${p.id}')">
+      <div class="pavatar" style="background:${color}">${initials}</div>
+      <div class="pname">${esc(p.name)}</div>
+    </div>`;
+  }).join('')+`<div class="pcard padmin" onclick="showAdminLogin()">
+    <div class="pavatar"><i class="ti ti-shield" style="font-size:1.2rem"></i></div>
+    <div class="pname">Admin</div>
+  </div>`;
+}
+
+function selectUser(pid){
+  const p=getParts().find(x=>x.id===pid);
+  if(!p)return;
+  user=p;admin=false;enterApp();
+}
+
+function showAdminLogin(){
+  const box=document.getElementById('admin-box');
+  box.style.display=box.style.display==='block'?'none':'block';
+  if(box.style.display==='block')setTimeout(()=>document.getElementById('li-pwd').focus(),50);
+}
+
+function doAdminLogin(){
   hiErr('li-err');
-  const name=document.getElementById('li-name').value.trim();
-  if(!name){shErr('li-err','Veuillez saisir votre prénom.');return}
-  if(name.toLowerCase()==='admin'){
-    if(document.getElementById('li-pwd').value===getSettings().adminPwd){user={id:'admin',name:'Admin'};admin=true;enterApp()}
-    else shErr('li-err','Mot de passe incorrect.');
-    return;
+  const pwd=document.getElementById('li-pwd').value;
+  if(pwd===getSettings().adminPwd){
+    user={id:'admin',name:'Admin'};admin=true;
+    document.getElementById('li-pwd').value='';
+    document.getElementById('admin-box').style.display='none';
+    enterApp();
+  }else{
+    shErr('li-err','Mot de passe incorrect.');
   }
-  const ex=getParts().find(p=>p.name.toLowerCase()===name.toLowerCase());
-  if(ex){user=ex;admin=false;enterApp();return}
-  const id=genId();
-  try{
-    await sbUpsert('participants',{id,name});
-    if(!st.participants)st.participants={};
-    st.participants[id]={id,name};
-    user={id,name};admin=false;enterApp();
-  }catch(e){shErr('li-err',e.message)}
 }
 
 function doLogout(){
   stopPolling();user=null;admin=false;
   document.getElementById('app').hidden=true;
-  document.getElementById('s-login').hidden=false;
-  document.getElementById('li-name').value='';
+  document.getElementById('admin-box').style.display='none';
   document.getElementById('li-pwd').value='';
-  document.getElementById('li-admin-sec').style.display='none';
+  document.getElementById('s-login').hidden=false;
 }
 
 function enterApp(){
@@ -481,6 +527,7 @@ async function doSetup(){
     toast('Application initialisée !','ok');
     document.getElementById('s-setup').hidden=true;
     document.getElementById('s-login').hidden=false;
+    renderLoginScreen();
   }catch(e){shErr('su-err',e.message)}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-rocket"></i> Initialiser l\'application';
 }
@@ -790,6 +837,7 @@ async function init(){
   try{
     st=await sbReadAll();
     document.getElementById('s-login').hidden=false;
+    renderLoginScreen();
   }catch(e){
     document.getElementById('s-setup').hidden=false;
     shErr('su-err','Connexion impossible : '+e.message);
