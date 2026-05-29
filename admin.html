@@ -85,22 +85,33 @@ function renderAdmin(){
   // Import automatique via API
   const savedApiKey = localStorage.getItem('cdm_api_key')||'';
   const apiHtml=`<div class="card">
-    <div class="sec-title" style="margin-bottom:8px">
+    <div class="sec-title" style="margin-bottom:6px">
       <i class="ti ti-plug" style="color:var(--g)"></i> Import automatique des scores
     </div>
     <p style="font-size:.78rem;color:var(--t2);margin-bottom:10px;line-height:1.6">
-      Récupère les scores en cours depuis <strong>football-data.org</strong> (gratuit).
-      <a href="https://www.football-data.org/client/register" target="_blank" style="color:var(--g)">Créer un compte gratuit →</a>
+      Connecte-toi à <strong>football-data.org</strong> (gratuit) pour récupérer les scores automatiquement.
+      <a href="https://www.football-data.org/client/register" target="_blank" style="color:var(--g);font-weight:600">Créer un compte →</a>
     </p>
-    <div style="display:flex;gap:8px;align-items:stretch">
+
+    <div class="field" style="margin-bottom:8px">
+      <label>Clé API (Auth Token)</label>
       <input type="text" id="api-key-input" value="${esc(savedApiKey)}"
-        placeholder="Votre clé API football-data.org"
-        style="flex:1;font-size:.78rem;padding:8px 10px;height:38px">
-      <button class="btn btn-primary btn-sm" onclick="importScores()" style="white-space:nowrap;height:38px">
-        <i class="ti ti-download"></i> Importer
+        placeholder="Ex: a1b2c3d4e5f6..."
+        autocomplete="off" spellcheck="false"
+        onkeydown="if(event.key==='Enter')testApi()">
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="testApi()">
+        <i class="ti ti-plug-connected"></i> Tester la connexion
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="importScores()">
+        <i class="ti ti-download"></i> Importer les scores
       </button>
     </div>
-    <p id="api-status" style="font-size:.75rem;margin-top:7px;color:var(--t2)"></p>
+
+    <div id="api-status" style="margin-top:10px;font-size:.78rem;line-height:1.6;display:none"></div>
+    <div id="api-preview" style="margin-top:8px;display:none"></div>
   </div>`;
 
   // Réponses bonus correctes
@@ -366,90 +377,177 @@ async function adminClear(mid){
   }catch(e){toast(e.message,'ko')}
 }
 
-async function importScores(){
-  const key=document.getElementById('api-key-input')?.value.trim();
-  if(!key){toast('Entrez votre clé API football-data.org','ko');return}
-  localStorage.setItem('cdm_api_key',key);
-  const status=document.getElementById('api-status');
-  if(status)status.textContent='Récupération en cours…';
+// ── Helpers API ───────────────────────────────────────────
+function getApiKey(){return document.getElementById('api-key-input')?.value.trim()||''}
+function saveApiKey(){const k=getApiKey();if(k)localStorage.setItem('cdm_api_key',k)}
+function apiStatus(html,color='var(--t2)'){
+  const el=document.getElementById('api-status');
+  if(!el)return;
+  el.innerHTML=html;el.style.color=color;el.style.display='block';
+}
+async function apiFetch(path){
+  const key=getApiKey();
+  if(!key)throw new Error('Clé API manquante');
+  const r=await fetch('https://api.football-data.org/v4'+path,{headers:{'X-Auth-Token':key}});
+  if(r.status===403)throw new Error('Clé API invalide ou accès refusé (403)');
+  if(r.status===429)throw new Error('Trop de requêtes — attends 1 minute (limite gratuite : 10 req/min)');
+  if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Erreur ${r.status}${t?' — '+t.slice(0,80):''}`);}
+  return r.json();
+}
+// Normalise un nom d'équipe API vers le nom français de l'app
+function apiToFr(name){
+  return API_NAMES[name]||name;
+}
+
+// ── Test de connexion ──────────────────────────────────────
+async function testApi(){
+  const key=getApiKey();
+  if(!key){apiStatus('⚠ Entrez votre clé API d\'abord.','#d97706');return}
+  saveApiKey();
+  apiStatus('<span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);display:inline-block"></span> Test en cours…');
 
   try{
-    // football-data.org : compétition FIFA World Cup 2026 = "WC"
-    const r=await fetch('https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED',{
-      headers:{'X-Auth-Token':key}
-    });
-    if(r.status===403){
-      if(status)status.textContent='❌ Clé API invalide ou accès refusé.';
-      return;
-    }
-    if(r.status===404){
-      // Tournoi pas encore disponible ou code différent
-      if(status)status.textContent='⚠ Tournoi non trouvé. Le code FIFA 2026 sera disponible au démarrage du tournoi.';
-      return;
-    }
-    if(!r.ok) throw new Error('Erreur API: '+r.status);
+    // 1. Vérifie que la clé est valide en listant les compétitions disponibles
+    const data=await apiFetch('/competitions');
+    const comps=data.competitions||[];
+    const wc=comps.find(c=>c.code==='WC');
 
-    const data=await r.json();
-    const matches=data.matches||[];
-    if(!matches.length){
-      if(status)status.textContent='ℹ Aucun match terminé trouvé.';
+    if(!wc){
+      // Coupe du Monde pas encore dispo sur ce compte (tier gratuit peut ne pas l'inclure avant le tournoi)
+      const names=comps.slice(0,6).map(c=>`${c.name} (${c.code})`).join(', ');
+      apiStatus(
+        `⚠ <strong>Connexion réussie</strong> mais la Coupe du Monde (WC) n'est pas accessible.<br>
+        Compétitions disponibles : ${esc(names)}…<br>
+        <em>La FIFA 2026 sera disponible dès le début du tournoi (11 juin 2026).</em>`,
+        '#d97706'
+      );
       return;
     }
 
-    let updated=0, skipped=0;
-    const updates=[];
+    // 2. Infos sur la compétition WC
+    const season=wc.currentSeason;
+    const matchCount=await apiFetch('/competitions/WC/matches').then(d=>(d.matches||[]).length).catch(()=>'?');
+    apiStatus(
+      `✅ <strong>Connexion réussie !</strong><br>
+      Coupe du Monde accessible · Saison ${season?.startDate?.slice(0,4)||'—'} → ${season?.endDate?.slice(0,4)||'—'}<br>
+      ${matchCount} match(s) disponibles dans l'API`,
+      'var(--g-d)'
+    );
+    toast('API connectée ✓','ok');
 
-    for(const apiM of matches){
+  }catch(e){
+    apiStatus('❌ '+esc(e.message),'#dc2626');
+    toast(e.message,'ko');
+  }
+}
+
+// ── Import des scores ──────────────────────────────────────
+async function importScores(){
+  const key=getApiKey();
+  if(!key){apiStatus('⚠ Entrez votre clé API d\'abord.','#d97706');return}
+  saveApiKey();
+  apiStatus('<span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);display:inline-block"></span> Récupération des matchs terminés…');
+  document.getElementById('api-preview').style.display='none';
+
+  try{
+    const data=await apiFetch('/competitions/WC/matches?status=FINISHED&season=2026');
+    const apiMatches=data.matches||[];
+
+    if(!apiMatches.length){
+      apiStatus('ℹ Aucun match terminé trouvé pour FIFA 2026.<br><em>Le tournoi commence le 11 juin 2026.</em>','var(--t2)');
+      return;
+    }
+
+    // Construire la liste des mises à jour
+    const updates=[],notFound=[];
+    for(const apiM of apiMatches){
       const hs=apiM.score?.fullTime?.home;
       const as=apiM.score?.fullTime?.away;
       if(hs==null||as==null)continue;
 
-      // Trouver le match correspondant par noms d'équipes
-      const apiHome=API_NAMES[apiM.homeTeam?.name]||apiM.homeTeam?.shortName||apiM.homeTeam?.name||'';
-      const apiAway=API_NAMES[apiM.awayTeam?.name]||apiM.awayTeam?.shortName||apiM.awayTeam?.name||'';
+      const apiHome=apiToFr(apiM.homeTeam?.name||'');
+      const apiAway=apiToFr(apiM.awayTeam?.name||'');
 
-      const found=getMatches().find(m=>
-        (m.home===apiHome&&m.away===apiAway)||
-        (m.home===apiAway&&m.away===apiHome) // ordre inversé possible
-      );
-
-      if(!found)continue;
-
-      // Ne pas écraser si déjà identique
-      if(found.homeScore===hs&&found.awayScore===as){skipped++;continue}
-
-      const realHome=found.home===apiHome;
-      updates.push({
-        id:found.id,
-        homescore: realHome?hs:as,
-        awayscore: realHome?as:hs
+      // Chercher le match local par nom d'équipes
+      const found=getMatches().find(m=>{
+        const mh=m.home,ma=m.away;
+        return(mh===apiHome&&ma===apiAway)||(mh===apiAway&&ma===apiHome);
       });
+
+      if(!found){
+        // Essai avec shortName
+        const sh=apiToFr(apiM.homeTeam?.shortName||'');
+        const sa=apiToFr(apiM.awayTeam?.shortName||'');
+        const found2=getMatches().find(m=>(m.home===sh&&m.away===sa)||(m.home===sa&&m.away===sh));
+        if(!found2){notFound.push(`${apiM.homeTeam?.name} vs ${apiM.awayTeam?.name}`);continue}
+        const rh2=found2.home===sh;
+        updates.push({id:found2.id,homescore:rh2?hs:as,awayscore:rh2?as:hs,
+          label:`${found2.home} vs ${found2.away}`});
+        continue;
+      }
+
+      // Déjà à jour ?
+      const realHome=found.home===apiHome;
+      const newH=realHome?hs:as, newA=realHome?as:hs;
+      if(found.homeScore===newH&&found.awayScore===newA)continue;
+
+      updates.push({id:found.id,homescore:newH,awayscore:newA,
+        label:`${found.home} vs ${found.away}: ${newH}–${newA}`});
     }
 
-    // Appliquer les mises à jour
-    for(const upd of updates){
+    if(!updates.length){
+      apiStatus(`✅ Tous les scores (${apiMatches.length} matchs terminés) sont déjà à jour !`,'var(--g-d)');
+      return;
+    }
+
+    // Aperçu avant import
+    const preview=document.getElementById('api-preview');
+    preview.style.display='block';
+    preview.innerHTML=`<div style="background:var(--g-l);border:1px solid var(--bd2);border-radius:8px;padding:10px 12px;font-size:.75rem">
+      <strong style="color:var(--g-d)">${updates.length} score(s) à mettre à jour :</strong>
+      <ul style="margin:6px 0 8px 14px;color:var(--t)">
+        ${updates.map(u=>`<li>${esc(u.label)}</li>`).join('')}
+      </ul>
+      ${notFound.length?`<p style="color:#d97706">⚠ ${notFound.length} match(s) non trouvé(s) dans ta base</p>`:''}
+      <button class="btn btn-primary btn-sm" onclick="applyImport()" style="margin-top:4px">
+        <i class="ti ti-check"></i> Confirmer l'import
+      </button>
+    </div>`;
+    window._pendingUpdates=updates;
+    apiStatus(`${updates.length} score(s) prêts à importer — confirme ci-dessous.`,'var(--g-d)');
+
+  }catch(e){
+    apiStatus('❌ '+esc(e.message),'#dc2626');
+    toast(e.message,'ko');
+  }
+}
+
+// ── Appliquer les mises à jour confirmées ─────────────────
+async function applyImport(){
+  const updates=window._pendingUpdates||[];
+  if(!updates.length)return;
+  const preview=document.getElementById('api-preview');
+  if(preview)preview.style.display='none';
+  apiStatus('<span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);display:inline-block"></span> Import en cours…');
+
+  let done=0;
+  for(const upd of updates){
+    try{
       await sbPatch('matches',upd.id,{homescore:upd.homescore,awayscore:upd.awayscore});
       if(st.matches?.[upd.id]){
         st.matches[upd.id].homeScore=upd.homescore;
         st.matches[upd.id].awayScore=upd.awayscore;
         st.matches[upd.id].homescore=upd.homescore;
         st.matches[upd.id].awayscore=upd.awayscore;
-        // Propager le résultat (équipes suivantes)
-        await propagateResult(upd.id);
       }
-      updated++;
-    }
-
-    const msg=`✅ ${updated} score(s) mis à jour, ${skipped} déjà à jour, ${matches.length-updated-skipped} non trouvés.`;
-    if(status)status.textContent=msg;
-    toast(updated>0?`${updated} score(s) importé(s) ✓`:'Aucun nouveau score','ok');
-    if(updated>0)renderAdmin();
-
-  }catch(e){
-    const msg='❌ '+e.message;
-    if(status)status.textContent=msg;
-    toast(e.message,'ko');
+      await propagateResult(upd.id);
+      done++;
+    }catch(e){console.warn('Import error',upd.id,e)}
   }
+  window._pendingUpdates=[];
+  apiStatus(`✅ ${done} score(s) importé(s) avec succès !`,'var(--g-d)');
+  toast(`${done} score(s) importé(s) ✓`,'ok');
+  renderAdmin();
 }
 
 async function saveTeams(mid){
