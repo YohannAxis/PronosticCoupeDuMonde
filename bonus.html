@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Bonus</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" id="page-content">
+    <div class="page-content-inner" id="content-inner">
+      <div style="text-align:center;padding:40px 0;color:var(--t2)">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:20px;height:20px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async function(){
+  if(!requireUser())return;
+  updateUserBadge();
+  buildNav('bonus');
+  try{
+    st = await sbReadAll();
+    setSyncBadge(true);
+    renderBonus();
+    startPolling(renderBonus);
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('content-inner').innerHTML=
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+function renderBonus(){
+  if(!user)return;
+  const my = getBonus()[user.id]||{};
+  const ed = isBonusEditable();
+  const locked = isBonusLocked();
+  const br = getBR();
+
+  const statusBadge = ed
+    ? `<span class="badge b-green"><i class="ti ti-pencil"></i> Ouvert</span>`
+    : locked
+      ? `<span class="badge b-gold"><i class="ti ti-lock"></i> Verrouillé</span>`
+      : `<span class="badge b-red"><i class="ti ti-lock"></i> Tournoi démarré</span>`;
+
+  const allFilled = SBQ.every(q=>my[q.id]&&my[q.id].trim());
+  const anyFilled = SBQ.some(q=>my[q.id]&&my[q.id].trim());
+
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;flex-wrap:wrap">
+    <div class="sec-title" style="margin-bottom:0"><i class="ti ti-star"></i> Questions bonus</div>
+    ${statusBadge}
+  </div>`;
+
+  if(locked){
+    html+=`<div style="background:var(--gold-l);border:1.5px solid var(--gold);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:14px;font-size:.82rem;color:#854d0e">
+      <i class="ti ti-lock"></i> Vos réponses sont verrouillées définitivement.
+    </div>`;
+  }
+
+  if(!ed&&!locked){
+    html+=`<div style="background:#fee2e2;border:1.5px solid #fca5a5;border-radius:var(--r-sm);padding:12px 14px;margin-bottom:14px;font-size:.82rem;color:#991b1b">
+      <i class="ti ti-calendar-x"></i> Le tournoi a démarré — les réponses bonus ne peuvent plus être modifiées.
+    </div>`;
+  }
+
+  SBQ.forEach(q=>{
+    const val = my[q.id]||'';
+    const res = br[q.id];
+    let resultRow='';
+    if(res&&val){
+      const ok=val.trim().toLowerCase()===res.trim().toLowerCase();
+      resultRow=ok
+        ?`<div style="margin-top:8px"><span class="badge b-green"><i class="ti ti-check"></i> Correct · +5 pts</span></div>`
+        :`<div style="margin-top:8px"><span class="badge b-red"><i class="ti ti-x"></i> Réponse : ${esc(res)}</span></div>`;
+    }
+
+    html+=`<div class="bonus-card">
+      <div class="bonus-q"><i class="ti ${q.icon}"></i>${esc(q.label)}</div>
+      ${ed
+        ?`<input type="text"
+            id="bq-${q.id}"
+            value="${esc(val)}"
+            placeholder="Votre réponse…"
+            onblur="saveBonus('${q.id}',this.value)"
+            onkeydown="if(event.key==='Enter'){saveBonus('${q.id}',this.value);this.blur()}">`
+        :`<div class="bonus-static ${val?'filled':'empty'}">${val?esc(val):'Non renseigné'}</div>`
+      }
+      ${resultRow}
+    </div>`;
+  });
+
+  if(ed&&anyFilled&&!locked){
+    const canLock = allFilled;
+    html+=`<button class="btn btn-danger btn-full" style="margin-top:4px"
+      onclick="lockBonus()"
+      ${canLock?'':'disabled title="Remplissez toutes les réponses d\'abord"'}
+      style="margin-top:4px;${canLock?'':'opacity:.6;'}">
+      <i class="ti ti-lock"></i> Valider et verrouiller mes réponses
+    </button>
+    <p style="font-size:.72rem;color:var(--t2);text-align:center;margin-top:8px">
+      ⚠ Action irréversible — aucune modification possible après.
+    </p>`;
+  }else if(ed&&!anyFilled){
+    html+=`<p style="font-size:.8rem;color:var(--t2);margin-top:8px;text-align:center">
+      Renseignez vos réponses pour les soumettre.
+    </p>`;
+  }
+
+  document.getElementById('content-inner').innerHTML=html;
+}
+
+async function saveBonus(qid,val){
+  if(!user)return;
+  if(!st.bonus)st.bonus={};
+  if(!st.bonus[user.id])st.bonus[user.id]={};
+  st.bonus[user.id][qid]=val;
+  try{
+    await sbUpsert('bonus',{id:user.id+'_'+qid,participantid:user.id,questionid:qid,answer:val});
+    toast('Sauvegardé ✓','ok');
+  }catch(e){toast(e.message,'ko')}
+}
+
+async function lockBonus(){
+  if(!user)return;
+  if(!confirm('Verrouiller définitivement vos réponses bonus ?\n\nCette action est irréversible.'))return;
+  try{
+    await sbUpsert('bonus',{id:user.id+'__locked',participantid:user.id,questionid:'_locked',answer:'true'});
+    if(!st.bonus)st.bonus={};
+    if(!st.bonus[user.id])st.bonus[user.id]={};
+    st.bonus[user.id]._locked=true;
+    toast('Bonus verrouillés ✓','ok');
+    renderBonus();
+  }catch(e){toast(e.message,'ko')}
+}
+</script>
+</body>
+</html>

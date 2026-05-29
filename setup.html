@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Configuration</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.setup-scroll{overflow-y:auto;height:100dvh;background:linear-gradient(160deg,#15803d,#166534,#14532d);padding:20px}
+.setup-scroll::-webkit-scrollbar{width:4px}
+.setup-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,.05)}
+.setup-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="setup-scroll">
+  <div style="max-width:480px;margin:0 auto">
+    <div class="auth-box">
+      <div style="text-align:center;font-size:2.4rem;margin-bottom:12px">🏆</div>
+      <h2>Configuration Admin</h2>
+      <p class="auth-sub">Coupe du Monde 2026 · Première installation</p>
+
+      <div class="step-lbl"><span class="sn">1</span> Créez un projet sur
+        <a href="https://supabase.com" target="_blank" rel="noopener" style="color:var(--g);margin-left:4px;font-weight:600">supabase.com</a>
+      </div>
+
+      <div class="step-lbl"><span class="sn">2</span> SQL Editor → exécutez ce script :</div>
+      <div class="sql-blk" id="sql-block">create table participants (id text primary key, name text);
+create table matches (id text primary key, phase text, home text, away text, "date" text, "time" text, venue text, homescore int, awayscore int);
+create table pronostics (id text primary key, participantid text, matchid text, homescore int, awayscore int);
+create table bonus (id text primary key, participantid text, questionid text, answer text);
+create table bonus_results (id text primary key, answer text);
+create table settings (key text primary key, value text);
+alter table participants enable row level security;
+alter table matches enable row level security;
+alter table pronostics enable row level security;
+alter table bonus enable row level security;
+alter table bonus_results enable row level security;
+alter table settings enable row level security;
+create policy "all" on participants for all using (true) with check (true);
+create policy "all" on matches for all using (true) with check (true);
+create policy "all" on pronostics for all using (true) with check (true);
+create policy "all" on bonus for all using (true) with check (true);
+create policy "all" on bonus_results for all using (true) with check (true);
+create policy "all" on settings for all using (true) with check (true);</div>
+      <button class="copy-btn" onclick="copySQL()">📋 Copier le SQL</button>
+
+      <div class="step-lbl" style="margin-top:16px"><span class="sn">3</span> Project Settings → API → renseignez :</div>
+      <div class="field"><label>Project URL</label>
+        <input type="text" id="su-url" placeholder="https://xxxx.supabase.co" autocomplete="off">
+      </div>
+      <div class="field"><label>Anon public key</label>
+        <input type="text" id="su-key" placeholder="eyJhbGci…" autocomplete="off">
+      </div>
+      <div class="field"><label>Mot de passe administrateur</label>
+        <input type="password" id="su-pwd" placeholder="Choisissez un mot de passe" autocomplete="new-password">
+      </div>
+
+      <button class="btn btn-primary btn-full" id="init-btn" onclick="doSetup()">
+        <i class="ti ti-rocket"></i> Initialiser l'application
+      </button>
+      <p id="su-err" class="err"></p>
+
+      <!-- Résultat après init -->
+      <div id="result-box" style="display:none;margin-top:18px">
+        <div style="background:var(--g-l);border:1.5px solid var(--bd2);border-radius:var(--r-sm);padding:14px;margin-bottom:10px">
+          <div style="font-weight:700;color:var(--g-d);margin-bottom:6px;font-size:.88rem">
+            <i class="ti ti-check"></i> Application initialisée !
+          </div>
+          <p style="font-size:.8rem;color:var(--t2);margin-bottom:8px">Partagez ce lien avec les participants :</p>
+          <div class="link-box" id="share-link"></div>
+          <button class="btn btn-primary btn-sm btn-full" onclick="copyLink()">
+            <i class="ti ti-copy"></i> Copier le lien
+          </button>
+        </div>
+        <a href="login.html" class="btn btn-outline btn-full">
+          <i class="ti ti-arrow-right"></i> Aller à la page de connexion
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// Seed participants
+const SP=[
+  {id:'p01',name:'Akram'},{id:'p02',name:'Alexia'},{id:'p03',name:'Charles'},
+  {id:'p04',name:'Christian'},{id:'p05',name:'Dominique'},{id:'p06',name:'Dorian'},
+  {id:'p07',name:'Enzo'},{id:'p08',name:'Eric'},{id:'p09',name:'Fabienne'},
+  {id:'p10',name:'Frédérique'},{id:'p11',name:'Jean Noel'},{id:'p12',name:'Jerome'},
+  {id:'p13',name:'Laurence'},{id:'p14',name:'Maxime'},{id:'p15',name:'Mohamed'},
+  {id:'p16',name:'Nicolas'},{id:'p17',name:'Orelien'},{id:'p18',name:'Regine'},
+  {id:'p19',name:'Roselyne'},{id:'p20',name:'Yohann'}
+];
+
+// Seed matches
+const SM_RAW=[
+  // Groupe A
+  {id:'m001',phase:'Groupe A',home:'Mexique',away:'Afrique du Sud',date:'2026-06-11',time:'15:00',venue:'Mexico City'},
+  {id:'m002',phase:'Groupe A',home:'Corée du Sud',away:'Tchéquie',date:'2026-06-11',time:'22:00',venue:'Guadalajara'},
+  {id:'m025',phase:'Groupe A',home:'Tchéquie',away:'Afrique du Sud',date:'2026-06-18',time:'12:00',venue:'Atlanta'},
+  {id:'m028',phase:'Groupe A',home:'Mexique',away:'Corée du Sud',date:'2026-06-18',time:'21:00',venue:'Guadalajara'},
+  {id:'m053',phase:'Groupe A',home:'Tchéquie',away:'Mexique',date:'2026-06-24',time:'21:00',venue:'Mexico City'},
+  {id:'m054',phase:'Groupe A',home:'Afrique du Sud',away:'Corée du Sud',date:'2026-06-24',time:'21:00',venue:'Monterrey'},
+  // Groupe B
+  {id:'m003',phase:'Groupe B',home:'Canada',away:'Bosnie-Herzégovine',date:'2026-06-12',time:'15:00',venue:'Toronto'},
+  {id:'m005',phase:'Groupe B',home:'Qatar',away:'Suisse',date:'2026-06-13',time:'15:00',venue:'San Francisco'},
+  {id:'m026',phase:'Groupe B',home:'Suisse',away:'Bosnie-Herzégovine',date:'2026-06-18',time:'15:00',venue:'Los Angeles'},
+  {id:'m027',phase:'Groupe B',home:'Canada',away:'Qatar',date:'2026-06-18',time:'18:00',venue:'Vancouver'},
+  {id:'m049',phase:'Groupe B',home:'Suisse',away:'Canada',date:'2026-06-24',time:'15:00',venue:'Vancouver'},
+  {id:'m050',phase:'Groupe B',home:'Bosnie-Herzégovine',away:'Qatar',date:'2026-06-24',time:'15:00',venue:'Seattle'},
+  // Groupe C
+  {id:'m006',phase:'Groupe C',home:'Brésil',away:'Maroc',date:'2026-06-13',time:'18:00',venue:'New York/NJ'},
+  {id:'m007',phase:'Groupe C',home:'Haïti',away:'Écosse',date:'2026-06-13',time:'21:00',venue:'Boston'},
+  {id:'m030',phase:'Groupe C',home:'Écosse',away:'Maroc',date:'2026-06-19',time:'18:00',venue:'Boston'},
+  {id:'m031',phase:'Groupe C',home:'Brésil',away:'Haïti',date:'2026-06-19',time:'20:30',venue:'Philadelphie'},
+  {id:'m051',phase:'Groupe C',home:'Écosse',away:'Brésil',date:'2026-06-24',time:'18:00',venue:'Miami'},
+  {id:'m052',phase:'Groupe C',home:'Maroc',away:'Haïti',date:'2026-06-24',time:'18:00',venue:'Atlanta'},
+  // Groupe D
+  {id:'m004',phase:'Groupe D',home:'États-Unis',away:'Paraguay',date:'2026-06-12',time:'21:00',venue:'Los Angeles'},
+  {id:'m008',phase:'Groupe D',home:'Australie',away:'Turquie',date:'2026-06-13',time:'00:00',venue:'Vancouver'},
+  {id:'m029',phase:'Groupe D',home:'États-Unis',away:'Australie',date:'2026-06-19',time:'15:00',venue:'Seattle'},
+  {id:'m032',phase:'Groupe D',home:'Turquie',away:'Paraguay',date:'2026-06-19',time:'23:00',venue:'San Francisco'},
+  {id:'m059',phase:'Groupe D',home:'Turquie',away:'États-Unis',date:'2026-06-25',time:'22:00',venue:'Los Angeles'},
+  {id:'m060',phase:'Groupe D',home:'Paraguay',away:'Australie',date:'2026-06-25',time:'22:00',venue:'San Francisco'},
+  // Groupe E
+  {id:'m009',phase:'Groupe E',home:'Allemagne',away:'Curaçao',date:'2026-06-14',time:'13:00',venue:'Houston'},
+  {id:'m011',phase:'Groupe E',home:"Côte d'Ivoire",away:'Équateur',date:'2026-06-14',time:'19:00',venue:'Philadelphie'},
+  {id:'m034',phase:'Groupe E',home:'Allemagne',away:"Côte d'Ivoire",date:'2026-06-20',time:'16:00',venue:'Toronto'},
+  {id:'m035',phase:'Groupe E',home:'Équateur',away:'Curaçao',date:'2026-06-20',time:'20:00',venue:'Kansas City'},
+  {id:'m055',phase:'Groupe E',home:'Équateur',away:'Allemagne',date:'2026-06-25',time:'16:00',venue:'New York/NJ'},
+  {id:'m056',phase:'Groupe E',home:'Curaçao',away:"Côte d'Ivoire",date:'2026-06-25',time:'16:00',venue:'Philadelphie'},
+  // Groupe F
+  {id:'m010',phase:'Groupe F',home:'Pays-Bas',away:'Japon',date:'2026-06-14',time:'16:00',venue:'Dallas'},
+  {id:'m012',phase:'Groupe F',home:'Suède',away:'Tunisie',date:'2026-06-14',time:'22:00',venue:'Monterrey'},
+  {id:'m033',phase:'Groupe F',home:'Pays-Bas',away:'Suède',date:'2026-06-20',time:'13:00',venue:'Houston'},
+  {id:'m036',phase:'Groupe F',home:'Tunisie',away:'Japon',date:'2026-06-20',time:'00:00',venue:'Monterrey'},
+  {id:'m057',phase:'Groupe F',home:'Tunisie',away:'Pays-Bas',date:'2026-06-25',time:'19:00',venue:'Kansas City'},
+  {id:'m058',phase:'Groupe F',home:'Japon',away:'Suède',date:'2026-06-25',time:'19:00',venue:'Dallas'},
+  // Groupe G
+  {id:'m014',phase:'Groupe G',home:'Belgique',away:'Égypte',date:'2026-06-15',time:'15:00',venue:'Seattle'},
+  {id:'m016',phase:'Groupe G',home:'Iran',away:'Nouvelle-Zélande',date:'2026-06-15',time:'21:00',venue:'Los Angeles'},
+  {id:'m038',phase:'Groupe G',home:'Belgique',away:'Iran',date:'2026-06-21',time:'15:00',venue:'Los Angeles'},
+  {id:'m040',phase:'Groupe G',home:'Nouvelle-Zélande',away:'Égypte',date:'2026-06-21',time:'21:00',venue:'Vancouver'},
+  {id:'m065',phase:'Groupe G',home:'Nouvelle-Zélande',away:'Belgique',date:'2026-06-26',time:'23:00',venue:'Vancouver'},
+  {id:'m066',phase:'Groupe G',home:'Égypte',away:'Iran',date:'2026-06-26',time:'23:00',venue:'Seattle'},
+  // Groupe H
+  {id:'m013',phase:'Groupe H',home:'Espagne',away:'Cap-Vert',date:'2026-06-15',time:'12:00',venue:'Atlanta'},
+  {id:'m015',phase:'Groupe H',home:'Arabie Saoudite',away:'Uruguay',date:'2026-06-15',time:'18:00',venue:'Miami'},
+  {id:'m037',phase:'Groupe H',home:'Espagne',away:'Arabie Saoudite',date:'2026-06-21',time:'12:00',venue:'Atlanta'},
+  {id:'m039',phase:'Groupe H',home:'Uruguay',away:'Cap-Vert',date:'2026-06-21',time:'18:00',venue:'Miami'},
+  {id:'m063',phase:'Groupe H',home:'Uruguay',away:'Espagne',date:'2026-06-26',time:'20:00',venue:'Guadalajara'},
+  {id:'m064',phase:'Groupe H',home:'Cap-Vert',away:'Arabie Saoudite',date:'2026-06-26',time:'20:00',venue:'Houston'},
+  // Groupe I
+  {id:'m017',phase:'Groupe I',home:'France',away:'Sénégal',date:'2026-06-16',time:'15:00',venue:'New York/NJ'},
+  {id:'m018',phase:'Groupe I',home:'Irak',away:'Norvège',date:'2026-06-16',time:'18:00',venue:'Boston'},
+  {id:'m042',phase:'Groupe I',home:'France',away:'Irak',date:'2026-06-22',time:'17:00',venue:'Philadelphie'},
+  {id:'m043',phase:'Groupe I',home:'Norvège',away:'Sénégal',date:'2026-06-22',time:'20:00',venue:'New York/NJ'},
+  {id:'m061',phase:'Groupe I',home:'Norvège',away:'France',date:'2026-06-26',time:'15:00',venue:'Boston'},
+  {id:'m062',phase:'Groupe I',home:'Sénégal',away:'Irak',date:'2026-06-26',time:'15:00',venue:'Toronto'},
+  // Groupe J
+  {id:'m019',phase:'Groupe J',home:'Argentine',away:'Algérie',date:'2026-06-16',time:'21:00',venue:'Kansas City'},
+  {id:'m020',phase:'Groupe J',home:'Autriche',away:'Jordanie',date:'2026-06-16',time:'00:00',venue:'San Francisco'},
+  {id:'m041',phase:'Groupe J',home:'Argentine',away:'Autriche',date:'2026-06-22',time:'13:00',venue:'Dallas'},
+  {id:'m044',phase:'Groupe J',home:'Jordanie',away:'Algérie',date:'2026-06-22',time:'23:00',venue:'San Francisco'},
+  {id:'m071',phase:'Groupe J',home:'Jordanie',away:'Argentine',date:'2026-06-27',time:'22:00',venue:'Dallas'},
+  {id:'m072',phase:'Groupe J',home:'Algérie',away:'Autriche',date:'2026-06-27',time:'22:00',venue:'Kansas City'},
+  // Groupe K
+  {id:'m021',phase:'Groupe K',home:'Portugal',away:'Congo RD',date:'2026-06-17',time:'13:00',venue:'Houston'},
+  {id:'m024',phase:'Groupe K',home:'Ouzbékistan',away:'Colombie',date:'2026-06-17',time:'22:00',venue:'Mexico City'},
+  {id:'m045',phase:'Groupe K',home:'Portugal',away:'Ouzbékistan',date:'2026-06-23',time:'13:00',venue:'Houston'},
+  {id:'m048',phase:'Groupe K',home:'Colombie',away:'Congo RD',date:'2026-06-23',time:'22:00',venue:'Guadalajara'},
+  {id:'m069',phase:'Groupe K',home:'Colombie',away:'Portugal',date:'2026-06-27',time:'19:30',venue:'Miami'},
+  {id:'m070',phase:'Groupe K',home:'Congo RD',away:'Ouzbékistan',date:'2026-06-27',time:'19:30',venue:'Atlanta'},
+  // Groupe L
+  {id:'m022',phase:'Groupe L',home:'Angleterre',away:'Croatie',date:'2026-06-17',time:'16:00',venue:'Dallas'},
+  {id:'m023',phase:'Groupe L',home:'Ghana',away:'Panama',date:'2026-06-17',time:'19:00',venue:'Toronto'},
+  {id:'m046',phase:'Groupe L',home:'Angleterre',away:'Ghana',date:'2026-06-23',time:'16:00',venue:'Boston'},
+  {id:'m047',phase:'Groupe L',home:'Panama',away:'Croatie',date:'2026-06-23',time:'19:00',venue:'Toronto'},
+  {id:'m067',phase:'Groupe L',home:'Panama',away:'Angleterre',date:'2026-06-27',time:'17:00',venue:'New York/NJ'},
+  {id:'m068',phase:'Groupe L',home:'Croatie',away:'Ghana',date:'2026-06-27',time:'17:00',venue:'Philadelphie'},
+  // Phase finale
+  {id:'m073',phase:'16e de finale',home:'2e Gr.A',away:'2e Gr.B',date:'2026-06-28',time:'15:00',venue:'Los Angeles'},
+  {id:'m074',phase:'16e de finale',home:'1er Gr.E',away:'3e Gr.A/B/C/D/F',date:'2026-06-29',time:'16:30',venue:'Boston'},
+  {id:'m075',phase:'16e de finale',home:'1er Gr.F',away:'2e Gr.C',date:'2026-06-29',time:'21:00',venue:'Monterrey'},
+  {id:'m076',phase:'16e de finale',home:'1er Gr.C',away:'2e Gr.F',date:'2026-06-29',time:'13:00',venue:'Houston'},
+  {id:'m077',phase:'16e de finale',home:'1er Gr.I',away:'3e Gr.C/D/F/G/H',date:'2026-06-30',time:'17:00',venue:'New York/NJ'},
+  {id:'m078',phase:'16e de finale',home:'2e Gr.E',away:'2e Gr.I',date:'2026-06-30',time:'13:00',venue:'Dallas'},
+  {id:'m079',phase:'16e de finale',home:'1er Gr.A',away:'3e Gr.C/E/F/H/I',date:'2026-06-30',time:'21:00',venue:'Mexico City'},
+  {id:'m080',phase:'16e de finale',home:'1er Gr.L',away:'3e Gr.E/H/I/J/K',date:'2026-07-01',time:'12:00',venue:'Atlanta'},
+  {id:'m081',phase:'16e de finale',home:'1er Gr.D',away:'3e Gr.B/E/F/I/J',date:'2026-07-01',time:'20:00',venue:'San Francisco'},
+  {id:'m082',phase:'16e de finale',home:'1er Gr.G',away:'3e Gr.A/E/H/I/J',date:'2026-07-01',time:'16:00',venue:'Seattle'},
+  {id:'m083',phase:'16e de finale',home:'2e Gr.K',away:'2e Gr.L',date:'2026-07-02',time:'19:00',venue:'Toronto'},
+  {id:'m084',phase:'16e de finale',home:'1er Gr.H',away:'2e Gr.J',date:'2026-07-02',time:'15:00',venue:'Los Angeles'},
+  {id:'m085',phase:'16e de finale',home:'1er Gr.B',away:'3e Gr.E/F/G/I/J',date:'2026-07-02',time:'23:00',venue:'Vancouver'},
+  {id:'m086',phase:'16e de finale',home:'1er Gr.J',away:'2e Gr.H',date:'2026-07-03',time:'18:00',venue:'Miami'},
+  {id:'m087',phase:'16e de finale',home:'1er Gr.K',away:'3e Gr.D/E/I/J/L',date:'2026-07-03',time:'21:30',venue:'Kansas City'},
+  {id:'m088',phase:'16e de finale',home:'2e Gr.D',away:'2e Gr.G',date:'2026-07-03',time:'14:00',venue:'Dallas'},
+  {id:'m089',phase:'Huitième de finale',home:'V.M74',away:'V.M77',date:'2026-07-04',time:'17:00',venue:'Philadelphie'},
+  {id:'m090',phase:'Huitième de finale',home:'V.M73',away:'V.M75',date:'2026-07-04',time:'13:00',venue:'Houston'},
+  {id:'m091',phase:'Huitième de finale',home:'V.M76',away:'V.M78',date:'2026-07-05',time:'16:00',venue:'New York/NJ'},
+  {id:'m092',phase:'Huitième de finale',home:'V.M79',away:'V.M80',date:'2026-07-05',time:'20:00',venue:'Mexico City'},
+  {id:'m093',phase:'Huitième de finale',home:'V.M83',away:'V.M84',date:'2026-07-06',time:'15:00',venue:'Dallas'},
+  {id:'m094',phase:'Huitième de finale',home:'V.M81',away:'V.M82',date:'2026-07-06',time:'20:00',venue:'Seattle'},
+  {id:'m095',phase:'Huitième de finale',home:'V.M86',away:'V.M88',date:'2026-07-07',time:'12:00',venue:'Atlanta'},
+  {id:'m096',phase:'Huitième de finale',home:'V.M85',away:'V.M87',date:'2026-07-07',time:'16:00',venue:'Vancouver'},
+  {id:'m097',phase:'Quart de finale',home:'V.M89',away:'V.M90',date:'2026-07-09',time:'16:00',venue:'Boston'},
+  {id:'m098',phase:'Quart de finale',home:'V.M93',away:'V.M94',date:'2026-07-10',time:'15:00',venue:'Los Angeles'},
+  {id:'m099',phase:'Quart de finale',home:'V.M91',away:'V.M92',date:'2026-07-11',time:'17:00',venue:'Miami'},
+  {id:'m100',phase:'Quart de finale',home:'V.M95',away:'V.M96',date:'2026-07-11',time:'21:00',venue:'Kansas City'},
+  {id:'m101',phase:'Demi-finale',home:'V.M97',away:'V.M98',date:'2026-07-14',time:'15:00',venue:'Dallas'},
+  {id:'m102',phase:'Demi-finale',home:'V.M99',away:'V.M100',date:'2026-07-15',time:'15:00',venue:'Atlanta'},
+  {id:'m103',phase:'3e place',home:'Perdant M101',away:'Perdant M102',date:'2026-07-18',time:'17:00',venue:'Miami'},
+  {id:'m104',phase:'Finale',home:'V.M101',away:'V.M102',date:'2026-07-19',time:'15:00',venue:'New York/NJ'}
+];
+const SM = SM_RAW.map(m=>({...m,homescore:null,awayscore:null}));
+
+function copySQL(){
+  navigator.clipboard.writeText(document.getElementById('sql-block').textContent)
+    .then(()=>toast('SQL copié !','ok'))
+    .catch(()=>toast('Échec de la copie','ko'));
+}
+
+function copyLink(){
+  navigator.clipboard.writeText(document.getElementById('share-link').textContent)
+    .then(()=>toast('Lien copié !','ok'))
+    .catch(()=>toast('Échec de la copie','ko'));
+}
+
+function shErr(id,msg){const e=document.getElementById(id);if(e){e.textContent=msg;e.style.display='block'}}
+function hiErr(id){const e=document.getElementById(id);if(e)e.style.display='none'}
+
+async function doSetup(){
+  hiErr('su-err');
+  const url=document.getElementById('su-url').value.trim();
+  const key=document.getElementById('su-key').value.trim();
+  const pwd=document.getElementById('su-pwd').value;
+  if(!url||!key){shErr('su-err','URL et clé anon requises.');return}
+  if(!pwd){shErr('su-err','Mot de passe admin requis.');return}
+
+  const btn=document.getElementById('init-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Initialisation en cours…';
+
+  try{
+    SB_URL=url.replace(/\/$/,'');
+    SB_KEY=key;
+    await sbUpsert('participants',SP);
+    await sbUpsert('matches',SM);
+    await sbUpsert('settings',{key:'adminpwd',value:pwd});
+    localStorage.setItem('cdm_sb_url',SB_URL);
+    localStorage.setItem('cdm_sb_key',SB_KEY);
+
+    const cfg=btoa(JSON.stringify({url:SB_URL,key:SB_KEY}));
+    const link=window.location.origin+window.location.pathname.replace('setup.html','index.html')+'#'+cfg;
+    document.getElementById('share-link').textContent=link;
+    document.getElementById('result-box').style.display='block';
+    btn.style.display='none';
+    toast('Application initialisée !','ok');
+  }catch(e){
+    shErr('su-err',e.message);
+    btn.disabled=false;
+    btn.innerHTML='<i class="ti ti-rocket"></i> Initialiser l\'application';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Classement</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" id="page-content">
+    <div class="page-content-inner" id="content-inner">
+      <div style="text-align:center;padding:40px 0;color:var(--t2)">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:20px;height:20px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async function(){
+  if(!requireUser())return;
+  updateUserBadge();
+  buildNav('classement');
+  try{
+    st = await sbReadAll();
+    setSyncBadge(true);
+    renderClassement();
+    startPolling(renderClassement);
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('content-inner').innerHTML=
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+function renderClassement(){
+  const parts = getParts();
+  if(!parts.length){
+    document.getElementById('content-inner').innerHTML=
+      '<div class="empty-state"><i class="ti ti-users"></i>Aucun participant</div>';
+    return;
+  }
+
+  const ranked = parts.map((p,i)=>({
+    ...p,
+    pts:calcTotal(p.id),
+    color:COLORS[i%COLORS.length],
+    ini:getInitials(p.name)
+  })).sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name));
+
+  const maxPts = Math.max(1,...ranked.map(p=>p.pts));
+
+  // Podium
+  let podiumHtml = '';
+  if(ranked.length>=3){
+    const order=[
+      {p:ranked[1],rank:'rank2',emoji:'🥈'},
+      {p:ranked[0],rank:'rank1',emoji:'🥇'},
+      {p:ranked[2],rank:'rank3',emoji:'🥉'}
+    ];
+    podiumHtml=`<div class="podium">${order.map(({p,rank,emoji})=>{
+      const isMe=user&&p.id===user.id;
+      return`<div class="podium-item">
+        <div class="pod-ava" style="background:${p.color}${isMe?';border-color:var(--gold)':''}">${esc(p.ini)}</div>
+        <div class="pod-name">${esc(p.name)}${isMe?'<span class="me-tag">Vous</span>':''}</div>
+        <div class="pod-pts">${p.pts} pts</div>
+        <div class="pod-bar ${rank}">${emoji}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }else if(ranked.length===1){
+    const p=ranked[0];
+    const isMe=user&&p.id===user.id;
+    podiumHtml=`<div class="podium"><div class="podium-item">
+      <div class="pod-ava" style="background:${p.color}">${esc(p.ini)}</div>
+      <div class="pod-name">${esc(p.name)}${isMe?'<span class="me-tag">Vous</span>':''}</div>
+      <div class="pod-pts">${p.pts} pts</div>
+      <div class="pod-bar rank1">🥇</div>
+    </div></div>`;
+  }else if(ranked.length===2){
+    const order=[{p:ranked[1],rank:'rank2',emoji:'🥈'},{p:ranked[0],rank:'rank1',emoji:'🥇'}];
+    podiumHtml=`<div class="podium">${order.map(({p,rank,emoji})=>{
+      const isMe=user&&p.id===user.id;
+      return`<div class="podium-item">
+        <div class="pod-ava" style="background:${p.color}">${esc(p.ini)}</div>
+        <div class="pod-name">${esc(p.name)}${isMe?'<span class="me-tag">Vous</span>':''}</div>
+        <div class="pod-pts">${p.pts} pts</div>
+        <div class="pod-bar ${rank}">${emoji}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  // Liste rangs 4+
+  const listItems = ranked.slice(3).map((p,i)=>{
+    const pos=i+4;
+    const isMe=user&&p.id===user.id;
+    const barW=Math.round(p.pts/maxPts*100);
+    return`<div class="rank-row${isMe?' me':''}">
+      <div class="rank-num">${pos}</div>
+      <div class="rank-ava" style="background:${p.color}">${esc(p.ini)}</div>
+      <div class="rank-info">
+        <div class="rank-name">${esc(p.name)}${isMe?'<span class="me-tag">Vous</span>':''}</div>
+        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${barW}%"></div></div>
+      </div>
+      <div class="rank-pts">${p.pts}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('content-inner').innerHTML=
+    `<div class="sec-title"><i class="ti ti-trophy"></i> Classement</div>
+    ${podiumHtml}
+    ${ranked.length>3?`<div class="rank-list anim">${listItems}</div>`:''}
+    <p style="text-align:center;color:var(--t2);font-size:.7rem;margin-top:16px;padding-bottom:4px">
+      Synchro toutes les ${POLL_MS/1000}s · ${ranked.length} participants
+    </p>`;
+}
+</script>
+</body>
+</html>

@@ -4,7 +4,9 @@
       "Bash(npx claude-mem@latest install)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(ls \"c:\\\\Users\\\\YohannGUILLOUX\\\\Documents\\\\GitHub\\\\PronosticCoupeDuMonde\\\\\" --name)",
+      "Read(//c/Users/YohannGUILLOUX/Documents/GitHub/**)"
     ]
   }
 }

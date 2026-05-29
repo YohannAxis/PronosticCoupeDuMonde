@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Pronostics</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.pronos-layout{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.pills-zone{
+  flex-shrink:0;
+  padding:10px 14px 0;
+}
+.matches-zone{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:10px 14px calc(var(--nav-h) + 14px);
+}
+.matches-zone::-webkit-scrollbar{width:4px}
+.matches-zone::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" style="padding:0">
+    <div class="pronos-layout" id="pronos-layout">
+      <div style="text-align:center;padding:40px 0;color:var(--t2)">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:20px;height:20px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+let activePhase = 'Groupe A';
+
+(async function(){
+  if(!requireUser())return;
+  updateUserBadge();
+  buildNav('pronos');
+  try{
+    st = await sbReadAll();
+    setSyncBadge(true);
+    buildLayout();
+    startPolling(()=>{updatePronos(activePhase);});
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('pronos-layout').innerHTML=
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+function buildLayout(){
+  const grouped={};
+  getMatches().forEach(m=>{if(!grouped[m.phase])grouped[m.phase]=[];grouped[m.phase].push(m)});
+  const availablePhases=PHASES.filter(ph=>grouped[ph]);
+  if(!availablePhases.includes(activePhase))activePhase=availablePhases[0]||PHASES[0];
+
+  const pillsHtml=availablePhases.map(ph=>
+    `<button class="ppill${ph===activePhase?' active':''}" onclick="switchPhase('${esc(ph)}')">${esc(ph)}</button>`
+  ).join('');
+
+  document.getElementById('pronos-layout').innerHTML=
+    `<div class="pills-zone">
+      <div class="sec-title" style="margin-bottom:8px"><i class="ti ti-pencil"></i> Mes pronostics</div>
+      <div class="phase-pills" id="phase-pills">${pillsHtml}</div>
+    </div>
+    <div class="matches-zone" id="matches-zone"></div>`;
+
+  updatePronos(activePhase);
+}
+
+function switchPhase(ph){
+  activePhase=ph;
+  // Update pills active state
+  document.querySelectorAll('.ppill').forEach(btn=>{
+    btn.classList.toggle('active',btn.textContent===ph);
+  });
+  updatePronos(ph);
+  // Scroll matches to top
+  const zone=document.getElementById('matches-zone');
+  if(zone)zone.scrollTo(0,0);
+}
+
+function updatePronos(phase){
+  const zone=document.getElementById('matches-zone');
+  if(!zone)return;
+  const matches=getMatches().filter(m=>m.phase===phase);
+  const prons=getProns();
+  if(!matches.length){
+    zone.innerHTML='<div class="empty-state"><i class="ti ti-calendar-off"></i>Aucun match pour cette phase</div>';
+    return;
+  }
+  zone.innerHTML=matches.map(m=>renderMatch(m,prons)).join('');
+}
+
+function renderMatch(m,prons){
+  const key=user.id+'_'+m.id;
+  const p=prons[key]||{};
+  const ed=isEditable(m);
+  const played=m.homeScore!=null;
+  const pts=played?calcPts(p,m):null;
+  const ptsCls=pts===3?'p3':pts===2?'p2':pts===1?'p1':'p0';
+  const ptsChip=pts!==null?`<span class="pts-chip ${ptsCls}">${pts}pt${pts!==1?'s':''}</span>`:'';
+  const realSc=played?`<span style="font-size:.67rem;color:var(--t2);margin-left:3px">(${m.homeScore}–${m.awayScore})</span>`:'';
+
+  if(ed){
+    return`<div class="match-card">
+      <div class="match-meta">
+        <i class="ti ti-calendar" style="font-size:.75rem"></i>
+        ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}
+      </div>
+      <div class="match-body">
+        <div class="team">${esc(m.home)}</div>
+        <div class="score-grp">
+          <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
+            value="${p.homeScore!=null?p.homeScore:''}" placeholder="?"
+            onchange="savePron('${m.id}','home',this.value)"
+            id="ph-${m.id}">
+          <span class="ssep">–</span>
+          <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
+            value="${p.awayScore!=null?p.awayScore:''}" placeholder="?"
+            onchange="savePron('${m.id}','away',this.value)"
+            id="pa-${m.id}">
+        </div>
+        <div class="team">${esc(m.away)}</div>
+      </div>
+    </div>`;
+  }else{
+    const scoreDisp=p.homeScore!=null
+      ?`<span class="sval">${p.homeScore}–${p.awayScore}</span>`
+      :`<span class="sval" style="color:var(--t2);font-size:.85rem">–</span>`;
+    return`<div class="match-card${played?' played':' locked'}">
+      <div class="match-meta">
+        <i class="ti ti-lock" style="font-size:.75rem"></i>
+        ${esc(m.date)} ${esc(m.time)} · ${esc(m.venue)}${ptsChip}${realSc}
+      </div>
+      <div class="match-body">
+        <div class="team">${esc(m.home)}</div>
+        ${scoreDisp}
+        <div class="team">${esc(m.away)}</div>
+      </div>
+    </div>`;
+  }
+}
+
+async function savePron(mid,side,val){
+  const pid=user.id;
+  const key=pid+'_'+mid;
+  if(!st.pronostics)st.pronostics={};
+  const cur=st.pronostics[key]||{};
+  const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
+  upd[side+'Score']=val===''?null:+val;
+  st.pronostics[key]=upd;
+  if(upd.homeScore!=null&&upd.awayScore!=null){
+    try{
+      await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
+      toast('Pronostic sauvegardé ✓','ok');
+    }catch(e){toast(e.message,'ko')}
+  }
+}
+</script>
+</body>
+</html>

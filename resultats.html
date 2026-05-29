@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Résultats</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.res-layout{display:flex;flex-direction:column;height:100%}
+.pills-bar{flex-shrink:0;padding:10px 14px 0}
+.res-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 14px calc(var(--nav-h) + 14px)}
+.res-scroll::-webkit-scrollbar{width:4px}
+.res-scroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" style="padding:0">
+    <div class="res-layout" id="res-layout">
+      <div style="text-align:center;padding:40px 0;color:var(--t2)">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:20px;height:20px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+const GROUPS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+let activeGroup = 'Groupe A';
+
+(async function(){
+  if(!requireUser())return;
+  updateUserBadge();
+  buildNav('resultats');
+  try{
+    st = await sbReadAll();
+    setSyncBadge(true);
+    buildLayout();
+    startPolling(()=>renderGroupContent());
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('res-layout').innerHTML=
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+function buildLayout(){
+  const pillsHtml=GROUPS.map(g=>
+    `<button class="gpill${activeGroup==='Groupe '+g?' active':''}" onclick="switchGroup('Groupe ${g}')">${g}</button>`
+  ).join('');
+
+  document.getElementById('res-layout').innerHTML=
+    `<div class="pills-bar">
+      <div class="sec-title" style="margin-bottom:8px"><i class="ti ti-list-details"></i> Résultats</div>
+      <div class="group-pills" id="group-pills">${pillsHtml}</div>
+    </div>
+    <div class="res-scroll" id="res-scroll"></div>`;
+
+  renderGroupContent();
+}
+
+function switchGroup(g){
+  activeGroup=g;
+  document.querySelectorAll('.gpill').forEach(btn=>{
+    btn.classList.toggle('active',btn.textContent===g.replace('Groupe ',''));
+  });
+  const scroll=document.getElementById('res-scroll');
+  if(scroll)scroll.scrollTo(0,0);
+  renderGroupContent();
+}
+
+function renderGroupContent(){
+  const scroll=document.getElementById('res-scroll');
+  if(!scroll)return;
+
+  // Classement du groupe
+  const gmatches=getMatches().filter(m=>m.phase===activeGroup);
+  const teams={};
+  gmatches.forEach(m=>{
+    [m.home,m.away].forEach(t=>{if(!teams[t])teams[t]={n:t,mj:0,g:0,nul:0,p:0,bp:0,bc:0,pts:0}});
+    if(m.homeScore!=null){
+      const h=+m.homeScore,a=+m.awayScore,ht=teams[m.home],at=teams[m.away];
+      ht.mj++;ht.bp+=h;ht.bc+=a;at.mj++;at.bp+=a;at.bc+=h;
+      if(h>a){ht.g++;ht.pts+=3;at.p++}
+      else if(h<a){at.g++;at.pts+=3;ht.p++}
+      else{ht.nul++;ht.pts++;at.nul++;at.pts++}
+    }
+  });
+  const standing=Object.values(teams)
+    .sort((a,b)=>b.pts-a.pts||(b.bp-b.bc)-(a.bp-a.bc)||b.bp-a.bp);
+
+  const stRows=standing.length
+    ?standing.map((t,i)=>`<tr class="${i<2?'qual':''}">
+      <td>${i+1}. ${esc(t.n)}</td>
+      <td>${t.mj}</td><td>${t.g}</td><td>${t.nul}</td><td>${t.p}</td>
+      <td>${t.bp}</td><td>${t.bc}</td><td><strong>${t.pts}</strong></td>
+    </tr>`).join('')
+    :`<tr><td colspan="8" style="text-align:center;color:var(--t2);padding:16px">Aucun match joué</td></tr>`;
+
+  // Matchs du groupe
+  const matchRows=gmatches.map(m=>{
+    const played=m.homeScore!=null;
+    return`<div class="ko-row">
+      <div class="ko-team">
+        <div>${esc(m.home)}</div>
+        <div class="ko-meta">${m.date} ${m.time}</div>
+      </div>
+      ${played
+        ?`<div class="ko-score">${m.homeScore} – ${m.awayScore}</div>`
+        :`<div class="ko-vs">vs</div>`
+      }
+      <div class="ko-team">
+        <div>${esc(m.away)}</div>
+        <div class="ko-meta">${esc(m.venue)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Phase éliminatoire
+  const KO_PHASES=['16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
+  let koHtml='';
+  KO_PHASES.forEach(ph=>{
+    const ms=getMatches().filter(m=>m.phase===ph);
+    if(!ms.length)return;
+    koHtml+=`<div class="phase-hdr" style="margin-top:16px">
+      <i class="ti ti-arrow-right" style="font-size:.85rem"></i>${esc(ph)}
+    </div>`;
+    ms.forEach(m=>{
+      const played=m.homeScore!=null;
+      koHtml+=`<div class="ko-row">
+        <div class="ko-team">
+          <div>${esc(m.home)}</div>
+          <div class="ko-meta">${m.date}</div>
+        </div>
+        ${played
+          ?`<div class="ko-score">${m.homeScore} – ${m.awayScore}</div>`
+          :`<div class="ko-vs">vs</div>`
+        }
+        <div class="ko-team">
+          <div>${esc(m.away)}</div>
+          <div class="ko-meta">${esc(m.venue)}</div>
+        </div>
+      </div>`;
+    });
+  });
+
+  scroll.innerHTML=
+    `<div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>Classement ${esc(activeGroup)}</div>
+    <div class="card" style="padding:10px;overflow-x:auto;margin-bottom:12px">
+      <table class="stand-tbl">
+        <thead><tr>
+          <th>Équipe</th><th>MJ</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Pts</th>
+        </tr></thead>
+        <tbody>${stRows}</tbody>
+      </table>
+    </div>
+    <div class="phase-hdr"><i class="ti ti-circle-filled" style="font-size:.4rem"></i>Matchs ${esc(activeGroup)}</div>
+    ${matchRows||'<div class="empty-state" style="padding:20px"><i class="ti ti-calendar-off"></i>Aucun match</div>'}
+    ${koHtml}`;
+}
+</script>
+</body>
+</html>

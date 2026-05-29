@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" id="page-content">
+    <div class="page-content-inner" id="content-inner">
+      <div style="text-align:center;padding:40px 0;color:var(--t2)">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:20px;height:20px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async function(){
+  if(!requireUser())return;
+  // Redirect non-admins
+  if(!admin){
+    window.location.replace('classement.html');
+    return;
+  }
+  updateUserBadge();
+  buildNav('admin');
+  try{
+    st = await sbReadAll();
+    setSyncBadge(true);
+    renderAdmin();
+    startPolling(()=>{
+      // Only refresh sync badge during polling, not re-render to avoid input loss
+      setSyncBadge(true);
+    });
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('content-inner').innerHTML=
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+function renderAdmin(){
+  const br=getBR();
+  const grouped={};
+  getMatches().forEach(m=>{
+    if(!grouped[m.phase])grouped[m.phase]=[];
+    grouped[m.phase].push(m);
+  });
+
+  // Réponses bonus correctes
+  let bonusHtml=`<div class="card">
+    <div class="sec-title" style="margin-bottom:12px">
+      <i class="ti ti-star" style="color:var(--gold)"></i> Réponses bonus correctes
+    </div>`;
+  SBQ.forEach(q=>{
+    bonusHtml+=`<div class="field">
+      <label>${esc(q.label)}</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="br-${q.id}" value="${esc(br[q.id]||'')}" placeholder="Réponse correcte…" style="flex:1"
+          onkeydown="if(event.key==='Enter')saveBR('${q.id}')">
+        <button class="btn btn-primary btn-sm" onclick="saveBR('${q.id}')">
+          <i class="ti ti-check"></i>
+        </button>
+      </div>
+    </div>`;
+  });
+  bonusHtml+=`</div>`;
+
+  // Saisie des scores
+  let scoresHtml=`<div class="card">
+    <div class="sec-title" style="margin-bottom:4px">
+      <i class="ti ti-settings-2"></i> Saisie des scores
+    </div>
+    <p style="font-size:.78rem;color:var(--t2);margin-bottom:14px">Saisissez les deux scores puis cliquez ✓</p>
+  </div>`;
+
+  PHASES.filter(ph=>grouped[ph]).forEach(phase=>{
+    scoresHtml+=`<div class="phase-hdr">${esc(phase)}</div>`;
+    grouped[phase].forEach(m=>{
+      scoresHtml+=`<div class="admin-match" id="am-${m.id}">
+        <div class="admin-teams">
+          <div class="admin-name">${esc(m.home)} <span style="color:var(--t2);font-weight:400">vs</span> ${esc(m.away)}</div>
+          <div class="admin-meta">${m.date} ${m.time} · ${esc(m.venue)}</div>
+        </div>
+        <div class="admin-inputs">
+          <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
+            value="${m.homeScore!=null?m.homeScore:''}" placeholder="?" id="ah-${m.id}">
+          <span style="font-weight:700;color:var(--t2);font-size:.9rem">–</span>
+          <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
+            value="${m.awayScore!=null?m.awayScore:''}" placeholder="?" id="aa-${m.id}">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="adminSave('${m.id}')">
+          <i class="ti ti-check"></i>
+        </button>
+        ${m.homeScore!=null
+          ?`<button class="btn btn-danger btn-sm" onclick="adminClear('${m.id}')">
+              <i class="ti ti-x"></i>
+            </button>`
+          :''
+        }
+      </div>`;
+    });
+  });
+
+  // Infos + lien
+  const cfg = btoa(JSON.stringify({url:SB_URL,key:SB_KEY}));
+  const link = window.location.origin
+    + window.location.pathname.replace('admin.html','index.html')
+    + '#' + cfg;
+
+  const infoHtml=`<div class="card" style="margin-top:8px">
+    <div class="sec-title" style="margin-bottom:12px">
+      <i class="ti ti-info-circle"></i> Informations
+    </div>
+    <div class="info-row">
+      <span class="info-lbl">Backend</span>
+      <span class="info-val">Supabase (PostgreSQL)</span>
+    </div>
+    <div class="info-row">
+      <span class="info-lbl">Participants</span>
+      <span class="info-val">${getParts().length}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-lbl">Matchs</span>
+      <span class="info-val">${getMatches().length}</span>
+    </div>
+    <div class="info-row" style="padding-top:12px;border-bottom:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="copyLink()">
+          <i class="ti ti-copy"></i> Copier le lien
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="forceRefresh()">
+          <i class="ti ti-refresh"></i> Rafraîchir
+        </button>
+      </div>
+    </div>
+    <div id="link-preview" style="margin-top:8px;display:none">
+      <div class="link-box" id="link-val" style="font-size:.68rem;word-break:break-all"></div>
+    </div>
+  </div>`;
+
+  document.getElementById('content-inner').innerHTML=
+    `<div class="sec-title"><i class="ti ti-shield-check" style="color:var(--gold)"></i> Administration</div>
+    ${bonusHtml}
+    ${scoresHtml}
+    ${infoHtml}`;
+
+  // Store link for copy
+  window._shareLink = link;
+}
+
+async function adminSave(mid){
+  const h=document.getElementById('ah-'+mid)?.value;
+  const a=document.getElementById('aa-'+mid)?.value;
+  if(h===''||a===''){toast('Saisissez les deux scores','ko');return}
+  try{
+    await sbPatch('matches',mid,{homescore:+h,awayscore:+a});
+    if(st.matches?.[mid]){
+      st.matches[mid].homeScore=+h;
+      st.matches[mid].awayScore=+a;
+      st.matches[mid].homescore=+h;
+      st.matches[mid].awayscore=+a;
+    }
+    toast('Score sauvegardé ✓','ok');
+    renderAdmin();
+  }catch(e){toast(e.message,'ko')}
+}
+
+async function adminClear(mid){
+  if(!confirm('Effacer ce score ?'))return;
+  try{
+    await sbPatch('matches',mid,{homescore:null,awayscore:null});
+    if(st.matches?.[mid]){
+      st.matches[mid].homeScore=null;
+      st.matches[mid].awayScore=null;
+      st.matches[mid].homescore=null;
+      st.matches[mid].awayscore=null;
+    }
+    toast('Score effacé','ok');
+    renderAdmin();
+  }catch(e){toast(e.message,'ko')}
+}
+
+async function saveBR(qid){
+  const val=document.getElementById('br-'+qid)?.value.trim()||'';
+  if(!st.bonusResults)st.bonusResults={};
+  st.bonusResults[qid]=val;
+  try{
+    await sbUpsert('bonus_results',{id:qid,answer:val});
+    toast('Résultat sauvegardé ✓','ok');
+  }catch(e){toast(e.message,'ko')}
+}
+
+function copyLink(){
+  const link=window._shareLink||'';
+  navigator.clipboard.writeText(link)
+    .then(()=>toast('Lien copié ✓','ok'))
+    .catch(()=>{
+      const prev=document.getElementById('link-preview');
+      const val=document.getElementById('link-val');
+      if(prev&&val){val.textContent=link;prev.style.display='block';}
+      toast('Copiez le lien ci-dessous','ok');
+    });
+}
+
+async function forceRefresh(){
+  try{
+    st=await sbReadAll();
+    toast('Données rechargées ✓','ok');
+    renderAdmin();
+  }catch(e){toast(e.message,'ko')}
+}
+</script>
+</body>
+</html>
