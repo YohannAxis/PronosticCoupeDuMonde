@@ -92,6 +92,11 @@ function renderAdmin(){
       Connecte-toi à <strong>football-data.org</strong> (gratuit) pour récupérer les scores automatiquement.
       <a href="https://www.football-data.org/client/register" target="_blank" style="color:var(--g);font-weight:600">Créer un compte →</a>
     </p>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:.75rem;color:#1e40af;line-height:1.5">
+      <i class="ti ti-info-circle"></i>
+      Les appels passent via <strong>corsproxy.io</strong> (relais CORS indispensable pour les apps web statiques).
+      Ta clé API reste dans ton navigateur et n'est jamais stockée sur un serveur.
+    </div>
 
     <div class="field" style="margin-bottom:8px">
       <label>Clé API (Auth Token)</label>
@@ -388,8 +393,17 @@ function apiStatus(html,color='var(--t2)'){
 async function apiFetch(path){
   const key=getApiKey();
   if(!key)throw new Error('Clé API manquante');
-  const r=await fetch('https://api.football-data.org/v4'+path,{headers:{'X-Auth-Token':key}});
-  if(r.status===403)throw new Error('Clé API invalide ou accès refusé (403)');
+  // Le navigateur bloque les appels directs vers football-data.org (CORS + header X-Auth-Token).
+  // On passe par corsproxy.io qui relaie la requête côté serveur en conservant tous les headers.
+  const target='https://api.football-data.org/v4'+path;
+  const url='https://corsproxy.io/?'+encodeURIComponent(target);
+  let r;
+  try{
+    r=await fetch(url,{headers:{'X-Auth-Token':key}});
+  }catch(netErr){
+    throw new Error('Proxy CORS injoignable — vérifie ta connexion internet ou réessaie dans quelques secondes.');
+  }
+  if(r.status===403)throw new Error('Clé API invalide ou accès refusé (403) — vérifie ton Auth Token sur football-data.org');
   if(r.status===429)throw new Error('Trop de requêtes — attends 1 minute (limite gratuite : 10 req/min)');
   if(!r.ok){const t=await r.text().catch(()=>'');throw new Error(`Erreur ${r.status}${t?' — '+t.slice(0,80):''}`);}
   return r.json();
