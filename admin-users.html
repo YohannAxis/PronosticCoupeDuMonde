@@ -142,7 +142,7 @@ function render(){
     if(bonusIsLocked){
       bonusBadge = `<span class="badge" style="background:var(--gold-l);color:#854d0e;font-size:.6rem"><i class="ti ti-lock" style="font-size:.65rem"></i> Bonus verrouillé</span>`;
     }else if(bonusFilled>0){
-      bonusBadge = `<span class="badge b-blue" style="font-size:.6rem">${bonusFilled}/3 bonus</span>`;
+      bonusBadge = `<span class="badge b-blue" style="font-size:.6rem">${bonusFilled}/${SBQ.length} bonus</span>`;
     }else{
       bonusBadge = `<span class="badge" style="background:var(--bg);color:var(--t2);border:1px solid var(--bd);font-size:.6rem">0 bonus</span>`;
     }

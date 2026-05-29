@@ -42,7 +42,7 @@
 
       <div class="sec-title"><i class="ti ti-book"></i> Règles du jeu</div>
 
-      <!-- Système de points -->
+      <!-- Système de points matchs -->
       <div class="rule-card">
         <div class="rule-card-title">
           <i class="ti ti-calculator" style="color:var(--g)"></i> Système de points — matchs
@@ -51,58 +51,64 @@
         <div class="pts-row">
           <div class="emoji">🎯</div>
           <div class="desc"><strong>Score exact</strong> — tu as prédit le score précis du match</div>
-          <div class="pts"><span class="pts-chip p3" style="font-size:.8rem;padding:3px 9px">3 pts</span></div>
+          <div class="pts"><span class="pts-chip p3" style="font-size:.82rem;padding:3px 10px">5 pts</span></div>
         </div>
 
         <div class="pts-row">
           <div class="emoji">✅</div>
-          <div class="desc"><strong>Bonne équipe + bonne différence</strong> — bon vainqueur et même écart de buts (ex : tu joues 2-0, le score est 3-1)</div>
-          <div class="pts"><span class="pts-chip p2" style="font-size:.8rem;padding:3px 9px">2 pts</span></div>
-        </div>
-
-        <div class="pts-row">
-          <div class="emoji">👍</div>
-          <div class="desc"><strong>Bonne équipe gagnante</strong> — tu as prédit le bon vainqueur, mais pas la bonne différence</div>
-          <div class="pts"><span class="pts-chip p1" style="font-size:.8rem;padding:3px 9px">1 pt</span></div>
-        </div>
-
-        <div class="pts-row">
-          <div class="emoji">🤝</div>
-          <div class="desc"><strong>Nul prédit + nul réel</strong> — tu as prédit un match nul et il se termine effectivement à égalité</div>
-          <div class="pts"><span class="pts-chip p1" style="font-size:.8rem;padding:3px 9px">1 pt</span></div>
+          <div class="desc"><strong>Bon résultat (V/N/D)</strong> — tu as prédit le bon vainqueur ou le match nul, mais pas le score exact</div>
+          <div class="pts"><span class="pts-chip p2" style="font-size:.82rem;padding:3px 10px">3 pts</span></div>
         </div>
 
         <div class="pts-row">
           <div class="emoji">❌</div>
-          <div class="desc"><strong>Mauvais pronostic</strong> — tu as prédit le mauvais vainqueur</div>
-          <div class="pts"><span class="pts-chip p0" style="font-size:.8rem;padding:3px 9px">0 pt</span></div>
+          <div class="desc"><strong>Mauvais résultat</strong> — tu as prédit le mauvais vainqueur</div>
+          <div class="pts"><span class="pts-chip p0" style="font-size:.82rem;padding:3px 10px">0 pt</span></div>
         </div>
 
         <div class="info-banner banner-green">
           <i class="ti ti-info-circle"></i>
-          <span>Un pronostic non renseigné compte pour <strong>0 point</strong>.</span>
+          <span>Un pronostic non renseigné compte pour <strong>0 point</strong>. Il faut entrer le score avant la veille du match.</span>
         </div>
       </div>
 
       <!-- Questions bonus -->
       <div class="rule-card">
         <div class="rule-card-title">
-          <i class="ti ti-star" style="color:var(--gold)"></i> Questions bonus
+          <i class="ti ti-star" style="color:var(--gold)"></i> Bonus compétition
         </div>
 
-        <p style="font-size:.84rem;line-height:1.65;color:var(--t);margin-bottom:10px">
-          3 questions à remplir <strong>avant le début du tournoi</strong>. Chaque bonne réponse vaut <span class="pts-chip p3" style="font-size:.78rem;padding:2px 8px;vertical-align:middle">+5 pts</span>.
+        <p style="font-size:.84rem;line-height:1.6;color:var(--t);margin-bottom:12px">
+          4 questions à remplir <strong>avant le coup d'envoi du premier match</strong>.
         </p>
 
         <div class="bonus-list">
-          <div class="bonus-item"><i class="ti ti-trophy"></i> Vainqueur de la Coupe du Monde</div>
-          <div class="bonus-item"><i class="ti ti-ball-football"></i> Meilleur buteur du tournoi</div>
-          <div class="bonus-item"><i class="ti ti-star"></i> Meilleure équipe (style de jeu)</div>
+          <div class="bonus-item" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:8px"><i class="ti ti-trophy"></i> Champion du monde</span>
+            <span class="pts-chip p3" style="font-size:.78rem;padding:2px 9px">+15 pts</span>
+          </div>
+          <div class="bonus-item" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:8px"><i class="ti ti-medal"></i> Finaliste (équipe 1)</span>
+            <span class="pts-chip p2" style="font-size:.78rem;padding:2px 9px">+5 pts</span>
+          </div>
+          <div class="bonus-item" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:8px"><i class="ti ti-medal"></i> Finaliste (équipe 2)</span>
+            <span class="pts-chip p2" style="font-size:.78rem;padding:2px 9px">+5 pts</span>
+          </div>
+          <div class="bonus-item" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:8px"><i class="ti ti-ball-football"></i> Meilleur buteur</span>
+            <span class="pts-chip p1" style="font-size:.78rem;padding:2px 9px">+10 pts</span>
+          </div>
         </div>
 
-        <div class="info-banner banner-gold" style="margin-top:10px">
+        <div class="info-banner banner-blue" style="margin-top:10px">
+          <i class="ti ti-info-circle"></i>
+          <span>Pour les finalistes : tu marques <strong>5 pts par équipe finaliste correctement prédite</strong>, que ce soit en équipe 1 ou 2. Max 10 pts si les deux finalistes sont trouvés.</span>
+        </div>
+
+        <div class="info-banner banner-gold" style="margin-top:8px">
           <i class="ti ti-lock"></i>
-          <span>Les bonus se verrouillent <strong>dès le coup d'envoi du premier match — le 11 juin 2026 à 15h00</strong>. Après cette heure, aucune modification n'est possible, même si tu n'as pas tout rempli. Tu peux aussi les verrouiller manuellement avant cette date via l'onglet Bonus.</span>
+          <span>Les bonus se verrouillent <strong>le 11 juin 2026 à 15h00</strong> (coup d'envoi du 1er match). Tu peux aussi les verrouiller manuellement avant via l'onglet Bonus.</span>
         </div>
       </div>
 
@@ -132,6 +138,45 @@
             <div style="font-size:.72rem;font-weight:700;color:var(--t2)">Verrouillé</div>
             <div style="font-size:.68rem;color:var(--t2);margin-top:2px">La veille du match (J–1)</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Lots -->
+      <div class="rule-card">
+        <div class="rule-card-title">
+          <i class="ti ti-gift" style="color:var(--gold)"></i> Lots — Bons d'achat Giftéo
+        </div>
+
+        <p style="font-size:.84rem;line-height:1.6;color:var(--t);margin-bottom:12px">
+          Les lots sont attribués selon le classement final, <strong>à l'issue du tournoi</strong>.
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:1.5px solid var(--gold);border-radius:var(--r-sm);padding:12px 14px">
+            <span style="font-size:1.5rem;width:32px;text-align:center">🥇</span>
+            <div style="flex:1"><div style="font-weight:700;font-size:.9rem">1er</div></div>
+            <div style="font-weight:800;font-size:1.1rem;color:#92400e">100 €</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f8fafc,#e2e8f0);border:1.5px solid #cbd5e1;border-radius:var(--r-sm);padding:12px 14px">
+            <span style="font-size:1.5rem;width:32px;text-align:center">🥈</span>
+            <div style="flex:1"><div style="font-weight:700;font-size:.9rem">2e</div></div>
+            <div style="font-weight:800;font-size:1.1rem;color:#475569">75 €</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fff7ed,#fed7aa);border:1.5px solid #fdba74;border-radius:var(--r-sm);padding:12px 14px">
+            <span style="font-size:1.5rem;width:32px;text-align:center">🥉</span>
+            <div style="flex:1"><div style="font-weight:700;font-size:.9rem">3e</div></div>
+            <div style="font-weight:800;font-size:1.1rem;color:#9a3412">50 €</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:var(--g-l);border:1.5px solid var(--bd2);border-radius:var(--r-sm);padding:12px 14px">
+            <span style="font-size:1.3rem;width:32px;text-align:center">🎖️</span>
+            <div style="flex:1"><div style="font-weight:700;font-size:.9rem">4e – 6e</div></div>
+            <div style="font-weight:800;font-size:1.1rem;color:var(--g-d)">25 €</div>
+          </div>
+        </div>
+
+        <div class="info-banner banner-green" style="margin-top:10px">
+          <i class="ti ti-users"></i>
+          <span><strong>Tous les participants</strong> reçoivent également un bon d'achat Giftéo de <strong>25 €</strong>, en plus des éventuelles récompenses du classement.</span>
         </div>
       </div>
 

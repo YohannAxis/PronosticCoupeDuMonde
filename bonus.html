@@ -83,15 +83,32 @@ function renderBonus(){
     </div>`;
   }
 
+  // Pour les finalistes, les réponses sont correctes si elles correspondent à q2 OU q3
+  const finRes = [(br.q2||'').trim().toLowerCase(),(br.q3||'').trim().toLowerCase()].filter(Boolean);
+
   SBQ.forEach(q=>{
     const val = my[q.id]||'';
-    const res = br[q.id];
+    const norm = s=>(s||'').trim().toLowerCase();
     let resultRow='';
-    if(res&&val){
-      const ok=val.trim().toLowerCase()===res.trim().toLowerCase();
-      resultRow=ok
-        ?`<div style="margin-top:8px"><span class="badge b-green"><i class="ti ti-check"></i> Correct · +5 pts</span></div>`
-        :`<div style="margin-top:8px"><span class="badge b-red"><i class="ti ti-x"></i> Réponse : ${esc(res)}</span></div>`;
+    if(val.trim()){
+      const isFinalist = (q.id==='q2'||q.id==='q3');
+      if(isFinalist){
+        // Correct si la prédiction correspond à l'un des 2 finalistes
+        if(finRes.length){
+          const ok=finRes.includes(norm(val));
+          resultRow=ok
+            ?`<div style="margin-top:8px"><span class="badge b-green"><i class="ti ti-check"></i> Finaliste trouvé · +5 pts</span></div>`
+            :`<div style="margin-top:8px"><span class="badge b-red"><i class="ti ti-x"></i> Pas finaliste${finRes[0]?' (ex: '+esc(br.q2)+(br.q3?' / '+esc(br.q3):'')+')'  :''}</span></div>`;
+        }
+      } else {
+        const res=br[q.id];
+        if(res){
+          const ok=norm(val)===norm(res);
+          resultRow=ok
+            ?`<div style="margin-top:8px"><span class="badge b-green"><i class="ti ti-check"></i> Correct · +${q.pts} pts</span></div>`
+            :`<div style="margin-top:8px"><span class="badge b-red"><i class="ti ti-x"></i> Réponse : ${esc(res)}</span></div>`;
+        }
+      }
     }
 
     html+=`<div class="bonus-card">

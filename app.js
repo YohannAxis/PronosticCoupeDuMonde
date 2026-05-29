@@ -2,9 +2,10 @@
 
 // Constants
 const SBQ = [
-  {id:'q1',label:'Vainqueur de la Coupe du Monde',icon:'ti-trophy'},
-  {id:'q2',label:'Meilleur buteur du tournoi',icon:'ti-ball-football'},
-  {id:'q3',label:'Meilleure équipe (style de jeu)',icon:'ti-star'}
+  {id:'q1',label:'Champion du monde',icon:'ti-trophy',pts:15},
+  {id:'q2',label:'Finaliste (équipe 1)',icon:'ti-medal',pts:5},
+  {id:'q3',label:'Finaliste (équipe 2)',icon:'ti-medal',pts:5},
+  {id:'q4',label:'Meilleur buteur du tournoi',icon:'ti-ball-football',pts:10}
 ];
 const PHASES = ['Groupe A','Groupe B','Groupe C','Groupe D','Groupe E','Groupe F','Groupe G','Groupe H','Groupe I','Groupe J','Groupe K','Groupe L','16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale'];
 const COLORS = ['#16a34a','#2563eb','#7c3aed','#dc2626','#0891b2','#d97706','#9333ea','#0369a1','#b45309','#0f766e'];
@@ -87,22 +88,39 @@ function getProns(){return st.pronostics||{}}
 function getBonus(){return st.bonus||{}}
 function getBR(){return st.bonusResults||{}}
 
-// Points
+// Points match : 5 pts score exact, 3 pts bon résultat (V/N/D), 0 pt sinon
 function calcPts(p,m){
   if(m.homeScore==null)return null;
   if(!p||p.homeScore==null)return 0;
   const ph=+p.homeScore,pa=+p.awayScore,mh=+m.homeScore,ma=+m.awayScore;
-  if(ph===mh&&pa===ma)return 3;
+  if(ph===mh&&pa===ma)return 5;
   const pw=ph>pa?'h':pa>ph?'a':'d',rw=mh>ma?'h':ma>mh?'a':'d';
-  if(pw===rw){if(pw==='d')return 1;if((ph-pa)===(mh-ma))return 2;return 1}
-  return 0;
+  return pw===rw?3:0;
+}
+// Points bonus : champion 15pts, chaque finaliste trouvé 5pts, buteur 10pts
+function calcBonusPts(pid){
+  const br=getBR(),ub=getBonus()[pid]||{};
+  let pts=0;
+  const norm=s=>(s||'').trim().toLowerCase();
+  // Champion (q1) → 15 pts
+  if(norm(ub.q1)&&norm(br.q1)&&norm(ub.q1)===norm(br.q1))pts+=15;
+  // Finalistes (q2, q3) → 5 pts chacun si trouvé parmi les 2 résultats
+  const resF=[norm(br.q2),norm(br.q3)].filter(Boolean);
+  const predF=[norm(ub.q2),norm(ub.q3)].filter(Boolean);
+  const used=new Set();
+  predF.forEach(pred=>{
+    if(!pred)return;
+    const hit=resF.find(r=>r&&r===pred&&!used.has(r));
+    if(hit){used.add(hit);pts+=5;}
+  });
+  // Buteur (q4) → 10 pts
+  if(norm(ub.q4)&&norm(br.q4)&&norm(ub.q4)===norm(br.q4))pts+=10;
+  return pts;
 }
 function calcTotal(pid){
-  let t=0;const pr=getProns(),br=getBR(),bd=getBonus();
+  let t=0;const pr=getProns();
   getMatches().forEach(m=>{if(m.homeScore!=null){const pts=calcPts(pr[pid+'_'+m.id],m);if(pts)t+=pts}});
-  const ub=bd[pid]||{};
-  SBQ.forEach(q=>{const r=br[q.id];if(r&&ub[q.id]&&ub[q.id].trim().toLowerCase()===r.trim().toLowerCase())t+=5});
-  return t;
+  return t+calcBonusPts(pid);
 }
 function isEditable(m){
   if(m.homeScore!=null)return false;
