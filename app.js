@@ -26,12 +26,15 @@ const FLAGS = {
 };
 // Retourne "🇫🇷 France" ou juste "France" si pas de drapeau connu
 function teamDisplay(name){const f=FLAGS[name];return(f?f+' ':'')+esc(name)}
+function isPH(name){return/^(V\.|1er |2e |3e |Perdant )/.test(name||'')}
+function teamLabel(name){return isPH(name)?'<em style="color:var(--t2)">?</em>':teamDisplay(name)}
 const TABS = [
   // Onglets joueurs
   {id:'classement',href:'classement.html',icon:'ti-trophy',label:'Classement'},
   {id:'pronos',href:'pronos.html',icon:'ti-pencil',label:'Pronos'},
   {id:'bonus',href:'bonus.html',icon:'ti-star',label:'Bonus'},
   {id:'resultats',href:'resultats.html',icon:'ti-list-details',label:'Résultats'},
+  {id:'tableau',href:'tableau.html',icon:'ti-binary-tree',label:'Tableau'},
   {id:'regles',href:'regles.html',icon:'ti-book',label:'Règles'},
   // Onglets admin uniquement
   {id:'admin',href:'admin.html',icon:'ti-settings-2',label:'Scores',adminOnly:true},

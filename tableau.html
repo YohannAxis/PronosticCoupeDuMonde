@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CDM 2026 · Tableau</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.bracket-area{
+  overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  height:100%;
+  padding:10px 10px 16px;
+}
+.bracket{
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  height:640px;
+  min-width:1100px;
+}
+/* Round column */
+.bc{display:flex;flex-direction:column;flex-shrink:0;width:118px}
+.bc-label{
+  font-size:.58rem;font-weight:700;color:var(--t2);
+  text-transform:uppercase;letter-spacing:.05em;
+  text-align:center;padding:0 2px 7px;flex-shrink:0;
+}
+.bc-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1}
+
+/* Match card */
+.bm{
+  background:var(--surf);border:1.5px solid var(--bd);
+  border-radius:8px;overflow:hidden;flex-shrink:0;
+}
+.bm.played{border-color:var(--bd2)}
+.bm.bm-final{border-color:var(--gold);border-width:2px;background:linear-gradient(135deg,#fffbeb 0%,#f0fdf4 100%)}
+.bm.bm-3rd{border-color:#94a3b8;background:#f8fafc}
+.bm-team{display:flex;align-items:center;padding:4px 6px;gap:3px;min-height:25px}
+.bm-team+.bm-team{border-top:1px solid var(--bg)}
+.bm-team.win{background:var(--g-l)}
+.bm-name{flex:1;font-size:.62rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.15}
+.bm-name em{font-weight:400;color:var(--t2)}
+.bm-sc{font-size:.75rem;font-weight:800;min-width:13px;text-align:center}
+
+/* Connectors between rounds */
+.bconn{width:14px;flex-shrink:0;display:flex;flex-direction:column;justify-content:space-around}
+.bconn-pair{flex:1;display:flex;flex-direction:column}
+.ct{flex:1;border-right:2px solid #d1d5db;border-bottom:2px solid #d1d5db;border-radius:0 0 4px 0}
+.cb{flex:1;border-right:2px solid #d1d5db;border-top:2px solid #d1d5db;border-radius:0 4px 0 0}
+.ctr{flex:1;border-left:2px solid #d1d5db;border-bottom:2px solid #d1d5db;border-radius:0 0 0 4px}
+.cbr{flex:1;border-left:2px solid #d1d5db;border-top:2px solid #d1d5db;border-radius:4px 0 0 0}
+.chline{height:2px;background:#d1d5db;align-self:center;width:100%}
+
+/* Center column */
+.bc-center{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:8px;flex-shrink:0;padding:0 10px;width:134px;
+}
+.bc-final-label{
+  font-size:.65rem;font-weight:800;color:var(--gold);
+  text-transform:uppercase;letter-spacing:.06em;text-align:center;
+}
+.bc-third-label{
+  font-size:.58rem;font-weight:600;color:#64748b;
+  text-transform:uppercase;letter-spacing:.05em;text-align:center;
+  margin-top:4px;
+}
+
+/* Hint */
+.scroll-hint{
+  font-size:.72rem;color:var(--t2);margin-bottom:8px;
+  display:flex;align-items:center;gap:5px;
+}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="page-wrap">
+  <header class="app-hdr">
+    <div class="app-hdr-logo"><span style="font-size:1.25rem">🏆</span> CDM 2026</div>
+    <span id="sync-badge" class="badge b-sync"><span class="spin"></span></span>
+    <span id="user-badge" class="badge b-green"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()" style="padding:6px 10px;min-height:32px;border-radius:8px">
+      <i class="ti ti-logout"></i>
+    </button>
+  </header>
+
+  <div class="page-content" style="padding:0">
+    <div class="bracket-area" id="bracket-area">
+      <div style="display:flex;align-items:center;justify-content:center;height:200px">
+        <span class="spin" style="border-top-color:var(--g);border-color:rgba(0,0,0,.1);width:24px;height:24px;border-width:3px"></span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async function(){
+  if(!requireUser())return;
+  updateUserBadge();
+  buildNav('tableau');
+  try{
+    st=await sbReadAll();
+    setSyncBadge(true);
+    renderBracket();
+    startPolling(renderBracket);
+  }catch(e){
+    setSyncBadge(false);
+    document.getElementById('bracket-area').innerHTML=
+      '<div class="empty-state"><i class="ti ti-wifi-off"></i>Erreur de connexion</div>';
+  }
+})();
+
+// Structure du tableau FIFA 2026 (tirée des IDs de matchs)
+// Chaque ligne : deux matchs R32 → R16 → QF → SF
+const BDATA=[
+  // Côté gauche (→ m101 → m104)
+  {r32:['m074','m077'],r16:'m089',qf:'m097',sf:'m101',side:'L'},
+  {r32:['m073','m075'],r16:'m090',qf:'m097',sf:'m101',side:'L'},
+  {r32:['m083','m084'],r16:'m093',qf:'m098',sf:'m101',side:'L'},
+  {r32:['m081','m082'],r16:'m094',qf:'m098',sf:'m101',side:'L'},
+  // Côté droit (→ m102 → m104)
+  {r32:['m076','m078'],r16:'m091',qf:'m099',sf:'m102',side:'R'},
+  {r32:['m079','m080'],r16:'m092',qf:'m099',sf:'m102',side:'R'},
+  {r32:['m085','m087'],r16:'m096',qf:'m100',sf:'m102',side:'R'},
+  {r32:['m086','m088'],r16:'m095',qf:'m100',sf:'m102',side:'R'},
+];
+
+// Rendu d'une carte match dans le bracket
+function bcard(mid,cls=''){
+  const m=st.matches?.[mid];
+  if(!m)return`<div class="bm${cls?' '+cls:''}">
+    <div class="bm-team"><div class="bm-name"><em>?</em></div></div>
+    <div class="bm-team"><div class="bm-name"><em>?</em></div></div>
+  </div>`;
+  const played=m.homeScore!=null;
+  const hw=played&&m.homeScore>m.awayScore;
+  const aw=played&&m.awayScore>m.homeScore;
+  const tn=n=>isPH(n)?'<em>?</em>':(teamDisplay(n)||'?');
+  return`<div class="bm${played?' played':''} ${cls}">
+    <div class="bm-team${hw?' win':''}">
+      <div class="bm-name">${tn(m.home)}</div>
+      ${played?`<div class="bm-sc">${m.homeScore}</div>`:''}
+    </div>
+    <div class="bm-team${aw?' win':''}">
+      <div class="bm-name">${tn(m.away)}</div>
+      ${played?`<div class="bm-sc">${m.awayScore}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// Génère les connecteurs entre deux colonnes
+// dir='L' → connecteurs ouverts à droite, dir='R' → ouverts à gauche
+function connectors(count,dir){
+  const t=dir==='L'?'ct':'ctr', b=dir==='L'?'cb':'cbr';
+  let h=`<div class="bconn">`;
+  for(let i=0;i<count;i++)h+=`<div class="bconn-pair"><div class="${t}"></div><div class="${b}"></div></div>`;
+  return h+'</div>';
+}
+
+function renderBracket(){
+  const el=document.getElementById('bracket-area');
+  if(!el)return;
+
+  const L=BDATA.filter(b=>b.side==='L');
+  const R=BDATA.filter(b=>b.side==='R');
+  const lqf=[...new Set(L.map(b=>b.qf))]; // ['m097','m098']
+  const rqf=[...new Set(R.map(b=>b.qf))]; // ['m099','m100']
+
+  let html=`<div class="scroll-hint"><i class="ti ti-arrows-left-right"></i> Faites défiler pour voir le tableau complet</div>
+  <div class="bracket">`;
+
+  // ── GAUCHE : R32 ──────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">1/32 de finale</div>
+    <div class="bc-matches">`;
+  L.forEach(b=>{
+    html+=bcard(b.r32[0]);
+    html+=`<div style="height:5px"></div>`;
+    html+=bcard(b.r32[1]);
+    html+=`<div style="flex:1"></div>`;
+  });
+  html+=`</div></div>`;
+
+  html+=connectors(4,'L');
+
+  // ── GAUCHE : R16 ──────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">1/8 de finale</div>
+    <div class="bc-matches">`;
+  L.forEach(b=>{
+    html+=bcard(b.r16);
+    html+=`<div style="flex:1"></div>`;
+  });
+  html+=`</div></div>`;
+
+  html+=connectors(2,'L');
+
+  // ── GAUCHE : QF ───────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">Quart de finale</div>
+    <div class="bc-matches">`;
+  lqf.forEach(q=>{
+    html+=bcard(q);
+    html+=`<div style="flex:1"></div>`;
+  });
+  html+=`</div></div>`;
+
+  html+=connectors(1,'L');
+
+  // ── GAUCHE : SF ───────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">Demi-finale</div>
+    <div class="bc-matches" style="justify-content:center">`;
+  html+=bcard('m101');
+  html+=`</div></div>`;
+
+  // Ligne vers Final (gauche)
+  html+=`<div style="width:14px;flex-shrink:0;display:flex;align-items:center;padding-top:22px">
+    <div class="chline"></div>
+  </div>`;
+
+  // ── CENTRE : FINALE + 3e PLACE ─────────────────────────
+  html+=`<div class="bc-center">
+    <div class="bc-final-label">⚽ Finale</div>
+    ${bcard('m104','bm-final')}
+    <div class="bc-third-label">3e place</div>
+    ${bcard('m103','bm-3rd')}
+  </div>`;
+
+  // Ligne vers Final (droite)
+  html+=`<div style="width:14px;flex-shrink:0;display:flex;align-items:center;padding-top:22px">
+    <div class="chline"></div>
+  </div>`;
+
+  // ── DROITE : SF ───────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">Demi-finale</div>
+    <div class="bc-matches" style="justify-content:center">`;
+  html+=bcard('m102');
+  html+=`</div></div>`;
+
+  html+=connectors(1,'R');
+
+  // ── DROITE : QF ───────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">Quart de finale</div>
+    <div class="bc-matches">`;
+  rqf.forEach(q=>{
+    html+=bcard(q);
+    html+=`<div style="flex:1"></div>`;
+  });
+  html+=`</div></div>`;
+
+  html+=connectors(2,'R');
+
+  // ── DROITE : R16 ──────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">1/8 de finale</div>
+    <div class="bc-matches">`;
+  R.forEach(b=>{
+    html+=bcard(b.r16);
+    html+=`<div style="flex:1"></div>`;
+  });
+  html+=`</div></div>`;
+
+  html+=connectors(4,'R');
+
+  // ── DROITE : R32 ──────────────────────────────────────
+  html+=`<div class="bc">
+    <div class="bc-label">1/32 de finale</div>
+    <div class="bc-matches">`;
+  R.forEach(b=>{
+    html+=bcard(b.r32[0]);
+    html+=`<div style="height:5px"></div>`;
+    html+=bcard(b.r32[1]);
+    html+=`<div style="flex:1"></div>`;
+  });
+  html+=`</div></div>`;
+
+  html+=`</div>`; // end .bracket
+  el.innerHTML=html;
+}
+</script>
+</body>
+</html>

@@ -58,6 +58,22 @@
   }
 })();
 
+// Mapping noms API (anglais) → noms dans l'app (français)
+const API_NAMES={
+  'Mexico':'Mexique','South Africa':'Afrique du Sud','South Korea':'Corée du Sud','Czechia':'Tchéquie','Czech Republic':'Tchéquie',
+  'Canada':'Canada','Bosnia and Herzegovina':'Bosnie-Herzégovine','Qatar':'Qatar','Switzerland':'Suisse',
+  'Brazil':'Brésil','Morocco':'Maroc','Haiti':'Haïti','Scotland':'Écosse',
+  'United States':'États-Unis','Paraguay':'Paraguay','Australia':'Australie','Turkey':'Turquie','Türkiye':'Turquie',
+  'Germany':'Allemagne','Curaçao':'Curaçao','Ivory Coast':'Côte d\'Ivoire',"Côte d'Ivoire":"Côte d'Ivoire",'Ecuador':'Équateur',
+  'Netherlands':'Pays-Bas','Japan':'Japon','Sweden':'Suède','Tunisia':'Tunisie',
+  'Belgium':'Belgique','Egypt':'Égypte','Iran':'Iran','New Zealand':'Nouvelle-Zélande',
+  'Spain':'Espagne','Cape Verde':'Cap-Vert','Saudi Arabia':'Arabie Saoudite','Uruguay':'Uruguay',
+  'France':'France','Senegal':'Sénégal','Iraq':'Irak','Norway':'Norvège',
+  'Argentina':'Argentine','Algeria':'Algérie','Austria':'Autriche','Jordan':'Jordanie',
+  'Portugal':'Portugal','DR Congo':'Congo RD','Uzbekistan':'Ouzbékistan','Colombia':'Colombie',
+  'England':'Angleterre','Croatia':'Croatie','Ghana':'Ghana','Panama':'Panama'
+};
+
 function renderAdmin(){
   const br=getBR();
   const grouped={};
@@ -65,6 +81,27 @@ function renderAdmin(){
     if(!grouped[m.phase])grouped[m.phase]=[];
     grouped[m.phase].push(m);
   });
+
+  // Import automatique via API
+  const savedApiKey = localStorage.getItem('cdm_api_key')||'';
+  const apiHtml=`<div class="card">
+    <div class="sec-title" style="margin-bottom:8px">
+      <i class="ti ti-plug" style="color:var(--g)"></i> Import automatique des scores
+    </div>
+    <p style="font-size:.78rem;color:var(--t2);margin-bottom:10px;line-height:1.6">
+      Récupère les scores en cours depuis <strong>football-data.org</strong> (gratuit).
+      <a href="https://www.football-data.org/client/register" target="_blank" style="color:var(--g)">Créer un compte gratuit →</a>
+    </p>
+    <div style="display:flex;gap:8px;align-items:stretch">
+      <input type="text" id="api-key-input" value="${esc(savedApiKey)}"
+        placeholder="Votre clé API football-data.org"
+        style="flex:1;font-size:.78rem;padding:8px 10px;height:38px">
+      <button class="btn btn-primary btn-sm" onclick="importScores()" style="white-space:nowrap;height:38px">
+        <i class="ti ti-download"></i> Importer
+      </button>
+    </div>
+    <p id="api-status" style="font-size:.75rem;margin-top:7px;color:var(--t2)"></p>
+  </div>`;
 
   // Réponses bonus correctes
   let bonusHtml=`<div class="card">
@@ -214,6 +251,7 @@ function renderAdmin(){
 
   document.getElementById('content-inner').innerHTML=
     `<div class="sec-title"><i class="ti ti-shield-check" style="color:var(--gold)"></i> Administration</div>
+    ${apiHtml}
     ${bonusHtml}
     ${scoresHtml}
     ${infoHtml}`;
@@ -326,6 +364,92 @@ async function adminClear(mid){
     toast('Score effacé','ok');
     renderAdmin();
   }catch(e){toast(e.message,'ko')}
+}
+
+async function importScores(){
+  const key=document.getElementById('api-key-input')?.value.trim();
+  if(!key){toast('Entrez votre clé API football-data.org','ko');return}
+  localStorage.setItem('cdm_api_key',key);
+  const status=document.getElementById('api-status');
+  if(status)status.textContent='Récupération en cours…';
+
+  try{
+    // football-data.org : compétition FIFA World Cup 2026 = "WC"
+    const r=await fetch('https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED',{
+      headers:{'X-Auth-Token':key}
+    });
+    if(r.status===403){
+      if(status)status.textContent='❌ Clé API invalide ou accès refusé.';
+      return;
+    }
+    if(r.status===404){
+      // Tournoi pas encore disponible ou code différent
+      if(status)status.textContent='⚠ Tournoi non trouvé. Le code FIFA 2026 sera disponible au démarrage du tournoi.';
+      return;
+    }
+    if(!r.ok) throw new Error('Erreur API: '+r.status);
+
+    const data=await r.json();
+    const matches=data.matches||[];
+    if(!matches.length){
+      if(status)status.textContent='ℹ Aucun match terminé trouvé.';
+      return;
+    }
+
+    let updated=0, skipped=0;
+    const updates=[];
+
+    for(const apiM of matches){
+      const hs=apiM.score?.fullTime?.home;
+      const as=apiM.score?.fullTime?.away;
+      if(hs==null||as==null)continue;
+
+      // Trouver le match correspondant par noms d'équipes
+      const apiHome=API_NAMES[apiM.homeTeam?.name]||apiM.homeTeam?.shortName||apiM.homeTeam?.name||'';
+      const apiAway=API_NAMES[apiM.awayTeam?.name]||apiM.awayTeam?.shortName||apiM.awayTeam?.name||'';
+
+      const found=getMatches().find(m=>
+        (m.home===apiHome&&m.away===apiAway)||
+        (m.home===apiAway&&m.away===apiHome) // ordre inversé possible
+      );
+
+      if(!found)continue;
+
+      // Ne pas écraser si déjà identique
+      if(found.homeScore===hs&&found.awayScore===as){skipped++;continue}
+
+      const realHome=found.home===apiHome;
+      updates.push({
+        id:found.id,
+        homescore: realHome?hs:as,
+        awayscore: realHome?as:hs
+      });
+    }
+
+    // Appliquer les mises à jour
+    for(const upd of updates){
+      await sbPatch('matches',upd.id,{homescore:upd.homescore,awayscore:upd.awayscore});
+      if(st.matches?.[upd.id]){
+        st.matches[upd.id].homeScore=upd.homescore;
+        st.matches[upd.id].awayScore=upd.awayscore;
+        st.matches[upd.id].homescore=upd.homescore;
+        st.matches[upd.id].awayscore=upd.awayscore;
+        // Propager le résultat (équipes suivantes)
+        await propagateResult(upd.id);
+      }
+      updated++;
+    }
+
+    const msg=`✅ ${updated} score(s) mis à jour, ${skipped} déjà à jour, ${matches.length-updated-skipped} non trouvés.`;
+    if(status)status.textContent=msg;
+    toast(updated>0?`${updated} score(s) importé(s) ✓`:'Aucun nouveau score','ok');
+    if(updated>0)renderAdmin();
+
+  }catch(e){
+    const msg='❌ '+e.message;
+    if(status)status.textContent=msg;
+    toast(e.message,'ko');
+  }
 }
 
 async function saveTeams(mid){
