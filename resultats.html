@@ -107,7 +107,7 @@ function renderGroupContent(){
 
   const stRows=standing.length
     ?standing.map((t,i)=>`<tr class="${i<2?'qual':''}">
-      <td>${i+1}. ${esc(t.n)}</td>
+      <td>${i+1}. ${teamDisplay(t.n)}</td>
       <td>${t.mj}</td><td>${t.g}</td><td>${t.nul}</td><td>${t.p}</td>
       <td>${t.bp}</td><td>${t.bc}</td><td><strong>${t.pts}</strong></td>
     </tr>`).join('')
@@ -118,7 +118,7 @@ function renderGroupContent(){
     const played=m.homeScore!=null;
     return`<div class="ko-row">
       <div class="ko-team">
-        <div>${esc(m.home)}</div>
+        <div>${teamDisplay(m.home)}</div>
         <div class="ko-meta">${m.date} ${m.time}</div>
       </div>
       ${played
@@ -126,7 +126,7 @@ function renderGroupContent(){
         :`<div class="ko-vs">vs</div>`
       }
       <div class="ko-team">
-        <div>${esc(m.away)}</div>
+        <div>${teamDisplay(m.away)}</div>
         <div class="ko-meta">${esc(m.venue)}</div>
       </div>
     </div>`;
@@ -145,7 +145,7 @@ function renderGroupContent(){
       const played=m.homeScore!=null;
       koHtml+=`<div class="ko-row">
         <div class="ko-team">
-          <div>${esc(m.home)}</div>
+          <div>${teamDisplay(m.home)}</div>
           <div class="ko-meta">${m.date}</div>
         </div>
         ${played
@@ -153,7 +153,7 @@ function renderGroupContent(){
           :`<div class="ko-vs">vs</div>`
         }
         <div class="ko-team">
-          <div>${esc(m.away)}</div>
+          <div>${teamDisplay(m.away)}</div>
           <div class="ko-meta">${esc(m.venue)}</div>
         </div>
       </div>`;

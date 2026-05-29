@@ -151,7 +151,7 @@ function renderAdmin(){
         // Match de groupe : noms fixes, saisie score uniquement
         scoresHtml+=`<div class="admin-match" id="am-${m.id}">
           <div class="admin-teams">
-            <div class="admin-name">${esc(m.home)} <span style="color:var(--t2);font-weight:400">vs</span> ${esc(m.away)}</div>
+            <div class="admin-name">${teamDisplay(m.home)} <span style="color:var(--t2);font-weight:400">vs</span> ${teamDisplay(m.away)}</div>
             <div class="admin-meta">${m.date} ${m.time} · ${esc(m.venue)}</div>
           </div>
           <div class="admin-inputs">
