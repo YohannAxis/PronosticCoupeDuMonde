@@ -85,39 +85,93 @@ function renderAdmin(){
   });
   bonusHtml+=`</div>`;
 
+  // Phases éliminatoires = équipes inconnues au départ → noms éditables
+  const KO_PHASES=new Set(['16e de finale','Huitième de finale','Quart de finale','Demi-finale','3e place','Finale']);
+
   // Saisie des scores
   let scoresHtml=`<div class="card">
     <div class="sec-title" style="margin-bottom:4px">
       <i class="ti ti-settings-2"></i> Saisie des scores
     </div>
-    <p style="font-size:.78rem;color:var(--t2);margin-bottom:14px">Saisissez les deux scores puis cliquez ✓</p>
+    <p style="font-size:.78rem;color:var(--t2);margin-bottom:14px">
+      Groupes : saisissez le score · Phase finale : mettez à jour les équipes <i class="ti ti-pencil" style="font-size:.8rem"></i> puis le score
+    </p>
   </div>`;
 
   PHASES.filter(ph=>grouped[ph]).forEach(phase=>{
     scoresHtml+=`<div class="phase-hdr">${esc(phase)}</div>`;
+    const isKO=KO_PHASES.has(phase);
+
     grouped[phase].forEach(m=>{
-      scoresHtml+=`<div class="admin-match" id="am-${m.id}">
-        <div class="admin-teams">
-          <div class="admin-name">${esc(m.home)} <span style="color:var(--t2);font-weight:400">vs</span> ${esc(m.away)}</div>
-          <div class="admin-meta">${m.date} ${m.time} · ${esc(m.venue)}</div>
-        </div>
-        <div class="admin-inputs">
-          <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
-            value="${m.homeScore!=null?m.homeScore:''}" placeholder="?" id="ah-${m.id}">
-          <span style="font-weight:700;color:var(--t2);font-size:.9rem">–</span>
-          <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
-            value="${m.awayScore!=null?m.awayScore:''}" placeholder="?" id="aa-${m.id}">
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="adminSave('${m.id}')">
-          <i class="ti ti-check"></i>
-        </button>
-        ${m.homeScore!=null
-          ?`<button class="btn btn-danger btn-sm" onclick="adminClear('${m.id}')">
-              <i class="ti ti-x"></i>
-            </button>`
-          :''
-        }
-      </div>`;
+      if(isKO){
+        // Match éliminatoire : champs noms équipes éditables + scores
+        const isPlaceholder = m.home.startsWith('V.') || m.home.startsWith('1er') || m.home.startsWith('2e') || m.home.startsWith('Perdant') || m.away.startsWith('V.') || m.away.startsWith('1er') || m.away.startsWith('2e') || m.away.startsWith('Perdant') || m.home.startsWith('3e');
+        scoresHtml+=`<div class="admin-match" id="am-${m.id}" style="flex-direction:column;align-items:stretch;gap:8px">
+          <div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">
+              <input type="text" id="ht-${m.id}" value="${esc(m.home)}"
+                placeholder="Équipe domicile"
+                style="flex:1;font-size:.78rem;padding:6px 9px;height:34px;min-width:0;${isPlaceholder?'border-color:#f59e0b;background:#fffbeb':''}"
+                onkeydown="if(event.key==='Enter')saveTeams('${m.id}')">
+              <span style="font-weight:700;color:var(--t2);flex-shrink:0;font-size:.8rem">vs</span>
+              <input type="text" id="at-${m.id}" value="${esc(m.away)}"
+                placeholder="Équipe extérieur"
+                style="flex:1;font-size:.78rem;padding:6px 9px;height:34px;min-width:0;${isPlaceholder?'border-color:#f59e0b;background:#fffbeb':''}"
+                onkeydown="if(event.key==='Enter')saveTeams('${m.id}')">
+              <button class="btn btn-outline btn-sm" onclick="saveTeams('${m.id}')"
+                title="Mettre à jour les noms d'équipes"
+                style="flex-shrink:0;padding:6px 9px;height:34px">
+                <i class="ti ti-pencil"></i>
+              </button>
+            </div>
+            <div class="admin-meta">${m.date} ${m.time} · ${esc(m.venue)}
+              ${isPlaceholder?'<span style="margin-left:6px;background:#fef3c7;color:#854d0e;font-size:.62rem;font-weight:700;padding:1px 6px;border-radius:10px">Équipes à renseigner</span>':''}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="admin-inputs">
+              <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
+                value="${m.homeScore!=null?m.homeScore:''}" placeholder="?" id="ah-${m.id}">
+              <span style="font-weight:700;color:var(--t2);font-size:.9rem">–</span>
+              <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
+                value="${m.awayScore!=null?m.awayScore:''}" placeholder="?" id="aa-${m.id}">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="adminSave('${m.id}')">
+              <i class="ti ti-check"></i>
+            </button>
+            ${m.homeScore!=null
+              ?`<button class="btn btn-danger btn-sm" onclick="adminClear('${m.id}')">
+                  <i class="ti ti-x"></i>
+                </button>`
+              :''
+            }
+          </div>
+        </div>`;
+      } else {
+        // Match de groupe : noms fixes, saisie score uniquement
+        scoresHtml+=`<div class="admin-match" id="am-${m.id}">
+          <div class="admin-teams">
+            <div class="admin-name">${esc(m.home)} <span style="color:var(--t2);font-weight:400">vs</span> ${esc(m.away)}</div>
+            <div class="admin-meta">${m.date} ${m.time} · ${esc(m.venue)}</div>
+          </div>
+          <div class="admin-inputs">
+            <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
+              value="${m.homeScore!=null?m.homeScore:''}" placeholder="?" id="ah-${m.id}">
+            <span style="font-weight:700;color:var(--t2);font-size:.9rem">–</span>
+            <input class="ainput" type="number" inputmode="numeric" min="0" max="20"
+              value="${m.awayScore!=null?m.awayScore:''}" placeholder="?" id="aa-${m.id}">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="adminSave('${m.id}')">
+            <i class="ti ti-check"></i>
+          </button>
+          ${m.homeScore!=null
+            ?`<button class="btn btn-danger btn-sm" onclick="adminClear('${m.id}')">
+                <i class="ti ti-x"></i>
+              </button>`
+            :''
+          }
+        </div>`;
+      }
     });
   });
 
@@ -196,6 +250,18 @@ async function adminClear(mid){
       st.matches[mid].awayscore=null;
     }
     toast('Score effacé','ok');
+    renderAdmin();
+  }catch(e){toast(e.message,'ko')}
+}
+
+async function saveTeams(mid){
+  const h=document.getElementById('ht-'+mid)?.value.trim();
+  const a=document.getElementById('at-'+mid)?.value.trim();
+  if(!h||!a){toast('Saisissez les deux noms d\'équipes','ko');return}
+  try{
+    await sbPatch('matches',mid,{home:h,away:a});
+    if(st.matches?.[mid]){st.matches[mid].home=h;st.matches[mid].away=a}
+    toast('Équipes mises à jour ✓','ok');
     renderAdmin();
   }catch(e){toast(e.message,'ko')}
 }
