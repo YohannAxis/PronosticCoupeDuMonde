@@ -234,9 +234,83 @@ async function adminSave(mid){
       st.matches[mid].homescore=+h;
       st.matches[mid].awayscore=+a;
     }
-    toast('Score sauvegardé ✓','ok');
+    const n=await propagateResult(mid);
+    toast(n>0?`Score + ${n} équipe(s) mise(s) à jour ✓`:'Score sauvegardé ✓','ok');
     renderAdmin();
   }catch(e){toast(e.message,'ko')}
+}
+
+// ── Propagation automatique des résultats ──────────────────
+// Après un score : remplace les placeholders dans les matchs suivants
+async function propagateResult(mid){
+  const m=st.matches[mid];
+  if(!m||m.homeScore==null)return 0;
+
+  const num=parseInt(mid.replace('m',''));
+  const hs=m.homeScore,as=m.awayScore;
+  const winner=hs>as?m.home:as>hs?m.away:null; // null si match nul (prolongations)
+  const loser =hs>as?m.away:as>hs?m.home:null;
+
+  const updates=[];
+
+  // 1. Phase éliminatoire : V.Mxx → vainqueur, Perdant Mxx → perdant
+  if(winner){
+    const wp='V.M'+num;
+    const lp='Perdant M'+num;
+    for(const [id,fm] of Object.entries(st.matches)){
+      const nh=fm.home===wp?winner:fm.home===lp?loser:fm.home;
+      const na=fm.away===wp?winner:fm.away===lp?loser:fm.away;
+      if(nh!==fm.home||na!==fm.away)updates.push({id,home:nh,away:na});
+    }
+  }
+
+  // 2. Fin de phase de groupe : 1er Gr.X / 2e Gr.X → équipes qualifiées
+  if(m.phase?.startsWith('Groupe ')){
+    const grp=m.phase;
+    const letter=grp.replace('Groupe ','');
+    const grpMs=getMatches().filter(x=>x.phase===grp);
+
+    if(grpMs.every(x=>x.homeScore!=null)){
+      // Calcul du classement
+      const teams={};
+      grpMs.forEach(gm=>{
+        [gm.home,gm.away].forEach(t=>{if(!teams[t])teams[t]={n:t,pts:0,gd:0,gf:0}});
+        const h=+gm.homeScore,a=+gm.awayScore;
+        teams[gm.home].gf+=h;teams[gm.home].gd+=h-a;
+        teams[gm.away].gf+=a;teams[gm.away].gd+=a-h;
+        if(h>a){teams[gm.home].pts+=3}
+        else if(h<a){teams[gm.away].pts+=3}
+        else{teams[gm.home].pts++;teams[gm.away].pts++}
+      });
+      const sorted=Object.values(teams)
+        .sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.n.localeCompare(b.n));
+
+      const first=sorted[0]?.n, second=sorted[1]?.n;
+      const fp='1er Gr.'+letter, sp='2e Gr.'+letter;
+
+      for(const [id,fm] of Object.entries(st.matches)){
+        if(fm.phase!=='16e de finale')continue;
+        // Le placeholder peut être partiel, ex "1er Gr.A" est dans fm.home
+        const nh=fm.home===fp?first:fm.home===sp?second:fm.home;
+        const na=fm.away===fp?first:fm.away===sp?second:fm.away;
+        if(nh!==fm.home||na!==fm.away){
+          const ex=updates.find(u=>u.id===id);
+          if(ex){ex.home=nh;ex.away=na}
+          else updates.push({id,home:nh,away:na});
+        }
+      }
+    }
+  }
+
+  // Appliquer les mises à jour en base
+  for(const upd of updates){
+    await sbPatch('matches',upd.id,{home:upd.home,away:upd.away});
+    if(st.matches[upd.id]){
+      st.matches[upd.id].home=upd.home;
+      st.matches[upd.id].away=upd.away;
+    }
+  }
+  return updates.length;
 }
 
 async function adminClear(mid){
