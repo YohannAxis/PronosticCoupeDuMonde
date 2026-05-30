@@ -19,23 +19,39 @@
   pointer-events:none;z-index:0;
 }
 .login-hero-zone{
-  flex-shrink:0;padding:32px 20px 18px;text-align:center;color:#fff;position:relative;z-index:1;
+  flex-shrink:0;padding:28px 20px 14px;text-align:center;color:#fff;position:relative;z-index:1;
 }
 .login-hero-zone .trophy{
-  font-size:3.8rem;display:block;margin-bottom:12px;
+  font-size:3.2rem;display:block;margin-bottom:8px;
   animation:float 3s ease-in-out infinite;
   filter:drop-shadow(0 8px 28px rgba(34,197,94,.45));
 }
-.login-hero-zone h1{font-size:2rem;font-weight:900;letter-spacing:-.04em;margin-bottom:4px;text-shadow:0 2px 16px rgba(0,0,0,.4)}
-.login-hero-zone .sub{font-size:.82rem;font-weight:500;opacity:.6;letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px}
+.login-hero-zone h1{font-size:1.8rem;font-weight:900;letter-spacing:-.04em;margin-bottom:3px;text-shadow:0 2px 16px rgba(0,0,0,.4)}
+.login-hero-zone .sub{font-size:.75rem;font-weight:500;opacity:.6;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
 .login-hero-zone .who{
   display:inline-block;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);
-  border-radius:var(--r-pill);padding:6px 18px;font-size:.88rem;font-weight:700;
+  border-radius:var(--r-pill);padding:5px 16px;font-size:.84rem;font-weight:700;
   letter-spacing:.01em;backdrop-filter:blur(8px);
+}
+/* Écran court : hero ultra-compact */
+@media(max-height:700px){
+  .login-hero-zone{padding:16px 20px 10px}
+  .login-hero-zone .trophy{font-size:2.4rem;margin-bottom:5px;animation:none}
+  .login-hero-zone h1{font-size:1.5rem}
+  .login-hero-zone .sub{display:none}
+  .login-hero-zone .who{padding:4px 14px;font-size:.8rem}
+}
+@media(max-height:580px){
+  .login-hero-zone{padding:10px 20px 8px}
+  .login-hero-zone .trophy{font-size:1.8rem;margin-bottom:4px}
+  .login-hero-zone h1{font-size:1.3rem}
+  .login-hero-zone .who{display:none}
 }
 .login-scroll-area{
   flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:6px 14px 20px;position:relative;z-index:1;
+  padding:6px 14px;
+  padding-bottom:max(24px, calc(env(safe-area-inset-bottom) + 24px));
+  position:relative;z-index:1;
 }
 .login-scroll-area::-webkit-scrollbar{display:none}
 .login-grid-inner{

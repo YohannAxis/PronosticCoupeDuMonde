@@ -325,11 +325,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   background:linear-gradient(135deg,var(--g-lll) 0%,var(--surf) 100%);
 }
 .match-card.locked{background:var(--surf2);border-color:var(--bd);border-left:4px solid var(--bd3)}
-.match-meta{font-size:.7rem;color:var(--t2);margin-bottom:12px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;line-height:1.4}
-.match-body{display:flex;align-items:center;gap:10px}
-.team{flex:1;font-weight:700;font-size:.9rem;text-align:center;line-height:1.3;min-width:0;color:var(--t)}
+.match-meta{font-size:.7rem;color:var(--t2);margin-bottom:10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;line-height:1.4}
+/* match-body, match-teams, match-score-row définis dans pronos.html */
+.team{font-weight:700;font-size:.9rem;color:var(--t)}
 
-/* Score inputs — grand format, ergonomique */
 .score-grp{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .sinput{
   width:64px;height:64px;text-align:center;
@@ -436,9 +435,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   /* Match cards */
   .match-card{padding:14px}
   .match-meta{font-size:.72rem;margin-bottom:10px}
-  .team{font-size:.94rem}
   .sinput{width:62px;height:60px;font-size:1.6rem}
-  .sval{font-size:1.45rem;min-width:62px}
+  .sval{font-size:1.45rem}
   /* Phase hdr */
   .phase-hdr{font-size:.84rem;padding:10px 14px}
   /* Rank */
