@@ -119,24 +119,29 @@
         </div>
 
         <p style="font-size:.84rem;line-height:1.65;color:var(--t);margin-bottom:10px">
-          Chaque pronostic est automatiquement verrouillé <strong>la veille du match à minuit</strong> (soit 24h avant le coup d'envoi). Passé ce délai, le score saisi ne peut plus être modifié et un pronostic non renseigné restera à 0 point.
+          Chaque pronostic est automatiquement verrouillé <strong>dès minuit la veille du match</strong> (heure française). Passé ce délai, le score saisi ne peut plus être modifié et un pronostic non renseigné restera à 0 point.
         </p>
 
         <div class="info-banner banner-green" style="margin-bottom:10px">
           <i class="ti ti-info-circle"></i>
-          <span><strong>Exemple :</strong> le match France vs Sénégal débute le 16 juin à 15h00 — tu dois avoir entré ton pronostic avant le 15 juin à 23h59.</span>
+          <span><strong>Exemple :</strong> France vs Sénégal, le 16 juin à 15h00 heure locale (= <strong>21h00 heure française</strong>) — le pronostic est verrouillé dès le <strong>15 juin à 00h00</strong>. Dernier moment : le <strong>14 juin à 23h59</strong>.</span>
+        </div>
+
+        <div class="info-banner" style="margin-bottom:10px;background:#fef3c7;border:1px solid #fde68a;color:#92400e">
+          <i class="ti ti-clock"></i>
+          <span><strong>Horaires :</strong> les matchs sont affichés en <strong>heure locale américaine</strong>. Ajouter +6h pour l'heure française (côte Est) ou +7/8/9h selon la ville.</span>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div style="background:var(--g-l);border:1.5px solid var(--bd2);border-radius:var(--r-sm);padding:10px;text-align:center">
             <div style="font-size:1.2rem;margin-bottom:4px">✏️</div>
             <div style="font-size:.72rem;font-weight:700;color:var(--g-d)">Modifiable</div>
-            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">J–2 ou plus avant le match</div>
+            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">Avant l'avant-veille minuit</div>
           </div>
           <div style="background:#fafafa;border:1.5px solid var(--bd);border-radius:var(--r-sm);padding:10px;text-align:center;opacity:.75">
             <div style="font-size:1.2rem;margin-bottom:4px">🔒</div>
             <div style="font-size:.72rem;font-weight:700;color:var(--t2)">Verrouillé</div>
-            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">La veille du match (J–1)</div>
+            <div style="font-size:.68rem;color:var(--t2);margin-top:2px">Dès minuit la veille (J–1)</div>
           </div>
         </div>
       </div>
