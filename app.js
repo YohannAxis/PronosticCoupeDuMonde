@@ -145,6 +145,11 @@ function calcTotal(pid){
 function isEditable(m){
   if(m.homeScore!=null)return false;
   if(!m.date)return true;
+  if(m.time){
+    const matchDT=new Date(m.date+'T'+m.time.slice(0,5)+':00');
+    if(!isNaN(matchDT.getTime()))return new Date()<new Date(matchDT.getTime()-2*3600000);
+  }
+  // Fallback sans heure : veille du match
   const [y,mo,d]=m.date.split('-').map(Number);
   const lk=new Date(y,mo-1,d-1);
   return today()<lk.getFullYear()+'-'+S2(lk.getMonth()+1)+'-'+S2(lk.getDate());

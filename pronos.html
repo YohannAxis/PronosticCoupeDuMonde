@@ -140,25 +140,32 @@ let allDates    = [];      // liste globale des dates disponibles
 const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const MOIS_COURT = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
 
-// Calcule la date limite (en heure française) pour un match donné
-// = veille du match date (d-1) - 1 = d-2 à 23h59
-// Le verrou tombe à minuit le jour d-1, donc la limite réelle = (d-2) 23h59
-function pronoDeadline(matchDate){
-  if(!matchDate)return null;
-  const [y,mo,d]=matchDate.split('-').map(Number);
-  const dl=new Date(y,mo-1,d-2); // 2 jours avant le match
+// Calcule la date/heure limite pour un match : 2h avant le coup d'envoi
+function pronoDeadline(m){
+  if(!m||!m.date)return null;
+  if(m.time){
+    const matchDT=new Date(m.date+'T'+m.time.slice(0,5)+':00');
+    if(!isNaN(matchDT.getTime())){
+      const lockDT=new Date(matchDT.getTime()-2*3600000);
+      const h=lockDT.getHours(),min=lockDT.getMinutes();
+      const timeStr=min===0?`${h}h`:`${S2(h)}h${S2(min)}`;
+      return{str:`${lockDT.getDate()} ${MOIS_COURT[lockDT.getMonth()]} à ${timeStr}`,dt:lockDT};
+    }
+  }
+  // Fallback sans heure : J-2 à 23h59
+  const [y,mo,d]=m.date.split('-').map(Number);
+  const dl=new Date(y,mo-1,d-2);
   return{
     str:`${dl.getDate()} ${MOIS_COURT[dl.getMonth()]} à 23h59`,
-    date:dl.getFullYear()+'-'+S2(dl.getMonth()+1)+'-'+S2(dl.getDate())
+    dt:new Date(dl.getFullYear(),dl.getMonth(),dl.getDate(),23,59)
   };
 }
-// Urgence : la deadline est aujourd'hui ou demain
-function deadlineUrgency(dlDate){
-  const t=today();
-  if(t===dlDate)return 'today';   // limite aujourd'hui !
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
-  const tomorrowStr=tomorrow.getFullYear()+'-'+S2(tomorrow.getMonth()+1)+'-'+S2(tomorrow.getDate());
-  if(tomorrowStr===dlDate)return 'soon'; // limite demain
+// Urgence selon le temps restant avant la limite
+function deadlineUrgency(dlDt){
+  if(!(dlDt instanceof Date))return 'normal';
+  const diffH=(dlDt-new Date())/3600000;
+  if(diffH<2)return 'urgent';   // moins de 2h
+  if(diffH<24)return 'soon';    // moins de 24h
   return 'normal';
 }
 function fmtDateLong(d){
@@ -360,16 +367,16 @@ function renderMatchCard(m,prons){
   </div>`;
 
   if(ed){
-    const dl=pronoDeadline(m.date);
-    const urgency=dl?deadlineUrgency(dl.date):'normal';
-    const dlColor=urgency==='today'?'var(--red)':urgency==='soon'?'var(--gold)':'var(--t2)';
-    const dlIcon=urgency==='today'?'ti-alert-triangle':urgency==='soon'?'ti-clock':'ti-calendar-time';
-    const dlText=urgency==='today'
-      ?`<strong style="color:var(--red)">Dernier jour !</strong> Limite : ${dl.str}`
+    const dl=pronoDeadline(m);
+    const urgency=dl?deadlineUrgency(dl.dt):'normal';
+    const dlColor=urgency==='urgent'?'var(--red)':urgency==='soon'?'var(--gold)':'var(--t2)';
+    const dlIcon=urgency==='urgent'?'ti-alert-triangle':urgency==='soon'?'ti-clock':'ti-calendar-time';
+    const dlText=urgency==='urgent'
+      ?`<strong style="color:var(--red)">Ferme bientôt !</strong> Limite : ${dl.str}`
       :urgency==='soon'
-        ?`Limite demain : ${dl.str}`
-        :dl?`Limite : ${dl.str} (h. fr.)`:'';
-    return`<div class="match-card${urgency==='today'?' deadline-today':''}">
+        ?`Limite aujourd'hui : ${dl.str}`
+        :dl?`Limite : ${dl.str}`:'';
+    return`<div class="match-card${urgency==='urgent'?' deadline-today':''}">
       <div class="match-meta"><i class="ti ti-calendar" style="font-size:.75rem"></i>${meta}</div>
       <div class="match-body">
         ${teamsRow}
