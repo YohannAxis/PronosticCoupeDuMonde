@@ -105,6 +105,25 @@ function render(){
     </div>
   </div>`;
 
+  // Bouton verrouillage global bonus
+  const notLocked = parts.filter(p=>{
+    const ub=bonus[p.id]||{};
+    return !ub._locked && SBQ.some(q=>ub[q.id]&&ub[q.id].trim());
+  }).length;
+  const lockAllHtml = notLocked>0
+    ? `<div class="card" style="margin-bottom:14px;border-color:#fde68a;background:#fffbeb">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:700;font-size:.85rem;color:#92400e"><i class="ti ti-lock"></i> Bonus non verrouillés</div>
+            <div style="font-size:.75rem;color:#b45309;margin-top:2px">${notLocked} joueur(s) ont rempli leurs réponses sans verrouiller</div>
+          </div>
+          <button class="btn btn-sm" style="background:#d97706;color:#fff;flex-shrink:0" onclick="lockAllBonus()">
+            <i class="ti ti-lock"></i> Verrouiller tous
+          </button>
+        </div>
+      </div>`
+    : '';
+
   // Formulaire ajout
   const addFormHtml = `<div class="card" style="margin-bottom:14px">
     <div class="sec-title" style="margin-bottom:10px"><i class="ti ti-user-plus"></i> Ajouter un joueur</div>
@@ -170,11 +189,34 @@ function render(){
   document.getElementById('content-inner').innerHTML =
     `<div class="sec-title"><i class="ti ti-users"></i> Gestion des joueurs</div>
     ${statsHtml}
+    ${lockAllHtml}
     ${addFormHtml}
     <div class="sec-title" style="margin-bottom:10px;font-size:.85rem">
       <i class="ti ti-list"></i> Participants (${totalParts})
     </div>
     ${rowsHtml||'<div class="empty-state"><i class="ti ti-users-off"></i>Aucun participant</div>'}`;
+}
+
+async function lockAllBonus(){
+  const bonus=getBonus();
+  const tolock=getParts().filter(p=>{
+    const ub=bonus[p.id]||{};
+    return !ub._locked && SBQ.some(q=>ub[q.id]&&ub[q.id].trim());
+  });
+  if(!tolock.length){toast('Tous les bonus sont déjà verrouillés','ok');return;}
+  if(!confirm(`Verrouiller les bonus de ${tolock.length} joueur(s) ?\n\nAction irréversible.`))return;
+  let done=0;
+  for(const p of tolock){
+    try{
+      await sbUpsert('bonus',{id:p.id+'__locked',participantid:p.id,questionid:'_locked',answer:'true'});
+      if(!st.bonus)st.bonus={};
+      if(!st.bonus[p.id])st.bonus[p.id]={};
+      st.bonus[p.id]._locked=true;
+      done++;
+    }catch(e){console.warn('Lock failed',p.name,e)}
+  }
+  toast(`${done} bonus verrouillé(s) ✓`,'ok');
+  render();
 }
 
 async function addUser(){

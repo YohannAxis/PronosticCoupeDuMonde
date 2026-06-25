@@ -108,6 +108,21 @@ function getProns(){return st.pronostics||{}}
 function getBonus(){return st.bonus||{}}
 function getBR(){return st.bonusResults||{}}
 
+// Normalisation floue pour les noms : accents, casse, espaces
+function normName(s){
+  return(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+}
+// Correspondance : exact OU nom partiel (prénom optionnel)
+function nameMatch(a,b){
+  const na=normName(a),nb=normName(b);
+  if(!na||!nb)return false;
+  if(na===nb)return true;
+  const wa=na.split(' '),wb=nb.split(' ');
+  if(wa.length===wb.length)return false; // même nb de mots, différents → pas un match partiel
+  const short=wa.length<wb.length?wa:wb,long=wa.length<wb.length?wb:wa;
+  return short.every(w=>long.includes(w));
+}
+
 // Points match : 5 pts score exact, 3 pts bon résultat (V/N/D), 0 pt sinon
 function calcPts(p,m){
   if(m.homeScore==null)return null;
@@ -118,23 +133,22 @@ function calcPts(p,m){
   return pw===rw?3:0;
 }
 // Points bonus : champion 15pts, chaque finaliste trouvé 5pts, buteur 10pts
+// Comparaison floue : accents, casse, prénom optionnel (nameMatch)
 function calcBonusPts(pid){
   const br=getBR(),ub=getBonus()[pid]||{};
   let pts=0;
-  const norm=s=>(s||'').trim().toLowerCase();
   // Champion (q1) → 15 pts
-  if(norm(ub.q1)&&norm(br.q1)&&norm(ub.q1)===norm(br.q1))pts+=15;
-  // Finalistes (q2, q3) → 5 pts chacun si trouvé parmi les 2 résultats
-  const resF=[norm(br.q2),norm(br.q3)].filter(Boolean);
-  const predF=[norm(ub.q2),norm(ub.q3)].filter(Boolean);
+  if(nameMatch(ub.q1,br.q1))pts+=15;
+  // Finalistes (q2, q3) → 5 pts chacun si trouvé parmi les 2 résultats (ordre indifférent)
+  const resF=[br.q2,br.q3].filter(r=>r&&r.trim());
+  const predF=[ub.q2,ub.q3].filter(p=>p&&p.trim());
   const used=new Set();
   predF.forEach(pred=>{
-    if(!pred)return;
-    const hit=resF.find(r=>r&&r===pred&&!used.has(r));
+    const hit=resF.find(r=>!used.has(r)&&nameMatch(pred,r));
     if(hit){used.add(hit);pts+=5;}
   });
   // Buteur (q4) → 10 pts
-  if(norm(ub.q4)&&norm(br.q4)&&norm(ub.q4)===norm(br.q4))pts+=10;
+  if(nameMatch(ub.q4,br.q4))pts+=10;
   return pts;
 }
 function calcTotal(pid){
