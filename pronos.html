@@ -383,11 +383,13 @@ function renderMatchCard(m,prons){
         <div class="match-score-row">
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.homeScore!=null?p.homeScore:''}" placeholder="?"
-            onchange="savePron('${m.id}','home',this.value)" id="ph-${m.id}">
+            oninput="debouncePron('${m.id}','home',this.value)"
+            onblur="savePron('${m.id}','home',this.value)" id="ph-${m.id}">
           <span class="ssep">–</span>
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.awayScore!=null?p.awayScore:''}" placeholder="?"
-            onchange="savePron('${m.id}','away',this.value)" id="pa-${m.id}">
+            oninput="debouncePron('${m.id}','away',this.value)"
+            onblur="savePron('${m.id}','away',this.value)" id="pa-${m.id}">
         </div>
         ${dlText?`<div class="match-deadline" style="color:${dlColor}">
           <i class="ti ${dlIcon}" style="font-size:.78rem"></i>${dlText}
@@ -462,14 +464,21 @@ function renderDone(){
 }
 
 /* ── Sauvegarde ───────────────────────────────────────────── */
+const _pronTimer={};
+function debouncePron(mid,side,val){
+  clearTimeout(_pronTimer[mid+side]);
+  _pronTimer[mid+side]=setTimeout(()=>savePron(mid,side,val),500);
+}
 async function savePron(mid,side,val){
+  clearTimeout(_pronTimer[mid+side]);
   const pid=user.id, key=pid+'_'+mid;
   if(!st.pronostics)st.pronostics={};
   const cur=st.pronostics[key]||{};
   const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
   upd[side+'Score']=val===''?null:+val;
   st.pronostics[key]=upd;
-  if(upd.homeScore!=null&&upd.awayScore!=null){
+  // Sauvegarder dès qu'au moins un score est renseigné (pas besoin des deux)
+  if(upd.homeScore!=null||upd.awayScore!=null){
     try{
       await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
       toast('Pronostic sauvegardé ✓','ok');
