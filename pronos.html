@@ -8,9 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-.pronos-layout{display:flex;flex-direction:column}
-.filter-zone{padding:10px 14px 6px;background:var(--bg);position:sticky;top:0;z-index:10}
-.matches-zone{padding:6px 14px calc(var(--nav-h)+14px)}
+.pronos-layout{display:flex;flex-direction:column;height:100%}
+.filter-zone{flex-shrink:0;padding:10px 14px 6px;background:var(--bg)}
+.matches-zone{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 14px calc(var(--nav-h)+14px)}
+.matches-zone::-webkit-scrollbar{width:4px}
+.matches-zone::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
 
 /* Onglets principaux */
 .main-tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:10px}
@@ -84,18 +86,6 @@
 .match-teams .team-r{text-align:right}
 .teams-vs{font-size:.72rem;font-weight:600;color:var(--t2);flex-shrink:0;padding:0 2px}
 .match-score-row{display:flex;align-items:center;justify-content:center;gap:8px}
-
-/* ── Bouton Valider ── */
-.btn-valider{
-  background:var(--g);color:#fff;border:none;border-radius:var(--r-sm);
-  padding:0 13px;height:44px;display:flex;align-items:center;justify-content:center;
-  gap:5px;cursor:pointer;font-size:.8rem;font-weight:700;font-family:inherit;
-  flex-shrink:0;white-space:nowrap;transition:background .15s;
-  -webkit-tap-highlight-color:transparent;
-}
-.btn-valider:disabled{opacity:.5;cursor:default}
-.btn-valider.saved{background:#94a3b8}
-.btn-valider i{font-size:.95rem}
 </style>
 </head>
 <body>
@@ -308,7 +298,7 @@ function setMode(mode){ filterMode=mode; buildLayout(); }
 function switchGroup(ph){
   activePhase=ph;
   document.querySelectorAll('#filter-pills .ppill').forEach(b=>b.classList.toggle('active',b.dataset.val===ph));
-  document.querySelector('.page-content')?.scrollTo(0,0);
+  document.getElementById('matches-zone')?.scrollTo(0,0);
   renderMatches();
 }
 
@@ -386,7 +376,6 @@ function renderMatchCard(m,prons){
       :urgency==='soon'
         ?`Limite aujourd'hui : ${dl.str}`
         :dl?`Limite : ${dl.str}`:'';
-    const hasSaved=p.homeScore!=null&&p.awayScore!=null;
     return`<div class="match-card${urgency==='urgent'?' deadline-today':''}">
       <div class="match-meta"><i class="ti ti-calendar" style="font-size:.75rem"></i>${meta}</div>
       <div class="match-body">
@@ -394,14 +383,11 @@ function renderMatchCard(m,prons){
         <div class="match-score-row">
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.homeScore!=null?p.homeScore:''}" placeholder="?"
-            oninput="onScoreInput('${m.id}')" id="ph-${m.id}">
+            onchange="savePron('${m.id}','home',this.value)" id="ph-${m.id}">
           <span class="ssep">–</span>
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.awayScore!=null?p.awayScore:''}" placeholder="?"
-            oninput="onScoreInput('${m.id}')" id="pa-${m.id}">
-          <button class="btn-valider${hasSaved?' saved':''}" id="bv-${m.id}" onclick="savePron('${m.id}',this)">
-            <i class="ti ti-check"></i>${hasSaved?'Modifier':'Valider'}
-          </button>
+            onchange="savePron('${m.id}','away',this.value)" id="pa-${m.id}">
         </div>
         ${dlText?`<div class="match-deadline" style="color:${dlColor}">
           <i class="ti ${dlIcon}" style="font-size:.78rem"></i>${dlText}
@@ -476,34 +462,18 @@ function renderDone(){
 }
 
 /* ── Sauvegarde ───────────────────────────────────────────── */
-function onScoreInput(mid){
-  const btn=document.getElementById('bv-'+mid);
-  if(!btn)return;
-  btn.classList.remove('saved');
-  btn.disabled=false;
-  btn.innerHTML='<i class="ti ti-check"></i> Valider';
-}
-async function savePron(mid,btn){
-  const hEl=document.getElementById('ph-'+mid);
-  const aEl=document.getElementById('pa-'+mid);
-  const hv=hEl?hEl.value.trim():'';
-  const av=aEl?aEl.value.trim():'';
-  if(hv===''||av===''){toast('Entrez les deux scores avant de valider','ko');return;}
-  const h=+hv, a=+av;
+async function savePron(mid,side,val){
   const pid=user.id, key=pid+'_'+mid;
   if(!st.pronostics)st.pronostics={};
-  st.pronostics[key]={participantId:pid,matchId:mid,homeScore:h,awayScore:a};
-  if(btn){
-    btn.disabled=true;
-    btn.innerHTML='<span class="spin" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.3)"></span>';
-  }
-  try{
-    await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:h,awayscore:a});
-    toast('Pronostic sauvegardé ✓','ok');
-    if(btn){btn.disabled=false;btn.classList.add('saved');btn.innerHTML='<i class="ti ti-check"></i> Modifié ✓';}
-  }catch(e){
-    toast(e.message,'ko');
-    if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Valider';}
+  const cur=st.pronostics[key]||{};
+  const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
+  upd[side+'Score']=val===''?null:+val;
+  st.pronostics[key]=upd;
+  if(upd.homeScore!=null&&upd.awayScore!=null){
+    try{
+      await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
+      toast('Pronostic sauvegardé ✓','ok');
+    }catch(e){toast(e.message,'ko');}
   }
 }
 </script>
