@@ -94,7 +94,7 @@ async function sbPatch(t,id,data){const r=await fetch(`${SB_URL}/rest/v1/${t}?id
 async function sbReadAll(){
   // limit=5000 : 20 joueurs × 104 matchs = 2080 pronostics max — dépasse la limite par défaut (1000)
   const [parts,matches,prons,bonus,br,settings]=await Promise.all([
-    sbGet('participants'),sbGet('matches'),sbGet('pronostics','&limit=10000&order=id.asc'),sbGet('bonus','&limit=2000&order=id.asc'),sbGet('bonus_results'),sbGet('settings')
+    sbGet('participants'),sbGet('matches'),sbGet('pronostics','&limit=5000'),sbGet('bonus','&limit=1000'),sbGet('bonus_results'),sbGet('settings')
   ]);
   const s={};
   s.participants=Object.fromEntries(parts.map(p=>[p.id,p]));
