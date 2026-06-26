@@ -83,12 +83,10 @@ async function sbUpsert(t,data){
   const body=JSON.stringify(Array.isArray(data)?data:[data]);
   const r=await fetch(`${SB_URL}/rest/v1/${t}`,{
     method:'POST',
-    headers:H({Prefer:'resolution=merge-duplicates,return=representation'}),
+    headers:H({Prefer:'resolution=merge-duplicates,return=minimal'}),
     body
   });
   if(!r.ok){const err=await r.text().catch(()=>'');throw new Error(`Écriture ${t}: ${r.status} ${err}`);}
-  const rows=await r.json().catch(()=>[]);
-  if(!Array.isArray(rows)||rows.length===0)throw new Error(`Sauvegarde bloquée (0 ligne) — vérifier RLS Supabase pour la table "${t}"`);
 }
 async function sbPatch(t,id,data){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:H({Prefer:'return=minimal'}),body:JSON.stringify(data)});if(!r.ok)throw new Error(`Patch ${t}: ${r.status}`)}
 
