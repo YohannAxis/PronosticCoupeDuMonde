@@ -112,7 +112,7 @@
   <nav class="bottom-nav" id="bottom-nav"></nav>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 <script>
 let mainTab   = 'ajouer'; // 'ajouer' | 'termines'
 let filterMode= 'date';   // 'date' | 'groupe'
@@ -383,11 +383,11 @@ function renderMatchCard(m,prons){
         <div class="match-score-row">
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.homeScore!=null?p.homeScore:''}" placeholder="?"
-            onchange="savePron('${m.id}','home',this.value)" id="ph-${m.id}">
+            oninput="savePron('${m.id}','home',this.value)" id="ph-${m.id}">
           <span class="ssep">–</span>
           <input class="sinput" type="number" inputmode="numeric" min="0" max="20"
             value="${p.awayScore!=null?p.awayScore:''}" placeholder="?"
-            onchange="savePron('${m.id}','away',this.value)" id="pa-${m.id}">
+            oninput="savePron('${m.id}','away',this.value)" id="pa-${m.id}">
         </div>
         ${dlText?`<div class="match-deadline" style="color:${dlColor}">
           <i class="ti ${dlIcon}" style="font-size:.78rem"></i>${dlText}
