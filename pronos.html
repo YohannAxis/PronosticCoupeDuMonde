@@ -477,8 +477,8 @@ async function savePron(mid,side,val){
   const upd={...cur,participantId:pid,matchId:mid,homeScore:cur.homeScore??null,awayScore:cur.awayScore??null};
   upd[side+'Score']=val===''?null:+val;
   st.pronostics[key]=upd;
-  // Sauvegarder dès qu'au moins un score est renseigné (pas besoin des deux)
-  if(upd.homeScore!=null||upd.awayScore!=null){
+  // Sauvegarder uniquement quand les deux scores sont renseignés (évite la course critique)
+  if(upd.homeScore!=null&&upd.awayScore!=null){
     try{
       await sbUpsert('pronostics',{id:key,participantid:pid,matchid:mid,homescore:upd.homeScore,awayscore:upd.awayScore});
       toast('Pronostic sauvegardé ✓','ok');
