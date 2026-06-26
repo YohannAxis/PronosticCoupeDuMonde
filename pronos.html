@@ -467,7 +467,7 @@ function renderDone(){
 const _pronTimer={};
 function debouncePron(mid,side,val){
   clearTimeout(_pronTimer[mid+side]);
-  _pronTimer[mid+side]=setTimeout(()=>savePron(mid,side,val),500);
+  _pronTimer[mid+side]=setTimeout(()=>savePron(mid,side,val),200);
 }
 async function savePron(mid,side,val){
   clearTimeout(_pronTimer[mid+side]);

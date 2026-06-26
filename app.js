@@ -79,7 +79,7 @@ function logout(){
 // Supabase API
 function H(ex={}){return{apikey:SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json',...ex}}
 async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=*${q}`,{headers:H()});if(!r.ok)throw new Error(`${t}: ${r.status}`);return r.json()}
-async function sbUpsert(t,data){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:H({Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(Array.isArray(data)?data:[data])});if(!r.ok)throw new Error(`Écriture ${t}: ${r.status}`)}
+async function sbUpsert(t,data){const body=JSON.stringify(Array.isArray(data)?data:[data]);const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:H({Prefer:'resolution=merge-duplicates,return=minimal'}),body,keepalive:true});if(!r.ok)throw new Error(`Écriture ${t}: ${r.status}`)}
 async function sbPatch(t,id,data){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:H({Prefer:'return=minimal'}),body:JSON.stringify(data)});if(!r.ok)throw new Error(`Patch ${t}: ${r.status}`)}
 
 async function sbReadAll(){
