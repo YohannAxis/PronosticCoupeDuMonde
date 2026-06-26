@@ -79,12 +79,23 @@ function logout(){
 // Supabase API
 function H(ex={}){return{apikey:SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json',...ex}}
 async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=*${q}`,{headers:H()});if(!r.ok)throw new Error(`${t}: ${r.status}`);return r.json()}
-async function sbUpsert(t,data){const body=JSON.stringify(Array.isArray(data)?data:[data]);const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:H({Prefer:'resolution=merge-duplicates,return=minimal'}),body,keepalive:true});if(!r.ok)throw new Error(`Écriture ${t}: ${r.status}`)}
+async function sbUpsert(t,data){
+  const body=JSON.stringify(Array.isArray(data)?data:[data]);
+  const r=await fetch(`${SB_URL}/rest/v1/${t}`,{
+    method:'POST',
+    headers:H({Prefer:'resolution=merge-duplicates,return=representation'}),
+    body
+  });
+  if(!r.ok){const err=await r.text().catch(()=>'');throw new Error(`Écriture ${t}: ${r.status} ${err}`);}
+  const rows=await r.json().catch(()=>[]);
+  if(!Array.isArray(rows)||rows.length===0)throw new Error(`Sauvegarde bloquée (0 ligne) — vérifier RLS Supabase pour la table "${t}"`);
+}
 async function sbPatch(t,id,data){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:H({Prefer:'return=minimal'}),body:JSON.stringify(data)});if(!r.ok)throw new Error(`Patch ${t}: ${r.status}`)}
 
 async function sbReadAll(){
+  // limit=5000 : 20 joueurs × 104 matchs = 2080 pronostics max — dépasse la limite par défaut (1000)
   const [parts,matches,prons,bonus,br,settings]=await Promise.all([
-    sbGet('participants'),sbGet('matches'),sbGet('pronostics'),sbGet('bonus'),sbGet('bonus_results'),sbGet('settings')
+    sbGet('participants'),sbGet('matches'),sbGet('pronostics','&limit=5000'),sbGet('bonus','&limit=1000'),sbGet('bonus_results'),sbGet('settings')
   ]);
   const s={};
   s.participants=Object.fromEntries(parts.map(p=>[p.id,p]));
