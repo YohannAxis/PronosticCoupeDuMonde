@@ -79,6 +79,17 @@ function logout(){
 // Supabase API
 function H(ex={}){return{apikey:SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json',...ex}}
 async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=*${q}`,{headers:H()});if(!r.ok)throw new Error(`${t}: ${r.status}`);return r.json()}
+async function sbGetAll(t){
+  // Supabase caps at 1000 rows per request — paginate to fetch everything
+  const sz=1000;let rows=[],off=0;
+  while(true){
+    const batch=await sbGet(t,`&limit=${sz}&offset=${off}&order=id.asc`);
+    rows=rows.concat(batch);
+    if(batch.length<sz)break;
+    off+=sz;
+  }
+  return rows;
+}
 async function sbUpsert(t,data){
   const body=JSON.stringify(Array.isArray(data)?data:[data]);
   const r=await fetch(`${SB_URL}/rest/v1/${t}`,{
@@ -92,9 +103,8 @@ async function sbUpsert(t,data){
 async function sbPatch(t,id,data){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',headers:H({Prefer:'return=minimal'}),body:JSON.stringify(data)});if(!r.ok)throw new Error(`Patch ${t}: ${r.status}`)}
 
 async function sbReadAll(){
-  // limit=5000 : 20 joueurs × 104 matchs = 2080 pronostics max — dépasse la limite par défaut (1000)
   const [parts,matches,prons,bonus,br,settings]=await Promise.all([
-    sbGet('participants'),sbGet('matches'),sbGet('pronostics','&limit=5000'),sbGet('bonus','&limit=1000'),sbGet('bonus_results'),sbGet('settings')
+    sbGet('participants'),sbGet('matches'),sbGetAll('pronostics'),sbGetAll('bonus'),sbGet('bonus_results'),sbGet('settings')
   ]);
   const s={};
   s.participants=Object.fromEntries(parts.map(p=>[p.id,p]));
