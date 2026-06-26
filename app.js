@@ -84,7 +84,8 @@ async function sbUpsert(t,data){
   const r=await fetch(`${SB_URL}/rest/v1/${t}`,{
     method:'POST',
     headers:H({Prefer:'resolution=merge-duplicates,return=minimal'}),
-    body
+    body,
+    keepalive:true
   });
   if(!r.ok){const err=await r.text().catch(()=>'');throw new Error(`Écriture ${t}: ${r.status} ${err}`);}
 }
