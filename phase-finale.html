@@ -128,6 +128,48 @@ const BDATA=[
   {r32:['m086','m088'],r16:'m095',qf:'m100',sf:'m102',side:'R'},
 ];
 
+// Compute sorted standings for a group (returns null if group not complete)
+function groupStandings(grpName){
+  const ms=getMatches().filter(m=>m.phase===grpName);
+  if(!ms.length||!ms.every(m=>m.homeScore!=null))return null;
+  const t={};
+  ms.forEach(m=>{
+    [m.home,m.away].forEach(n=>{if(!t[n])t[n]={n,pts:0,gd:0,gf:0}});
+    const h=+m.homeScore,a=+m.awayScore;
+    t[m.home].gf+=h;t[m.home].gd+=h-a;
+    t[m.away].gf+=a;t[m.away].gd+=a-h;
+    if(h>a)t[m.home].pts+=3;else if(h<a)t[m.away].pts+=3;else{t[m.home].pts++;t[m.away].pts++}
+  });
+  return Object.values(t).sort((a,b)=>b.pts-a.pts||b.gd-a.gd||b.gf-a.gf||a.n.localeCompare(b.n));
+}
+
+// Resolve a placeholder team name to the actual team (returns null if unknown)
+function resolveTeam(name){
+  if(!isPH(name))return name;
+  let mm;
+  // '1er Gr.A' → winner of Group A
+  mm=/^1er Gr\.([A-L])$/.exec(name);
+  if(mm){const s=groupStandings('Groupe '+mm[1]);return s?.[0]?.n||null}
+  // '2e Gr.A' → runner-up of Group A
+  mm=/^2e Gr\.([A-L])$/.exec(name);
+  if(mm){const s=groupStandings('Groupe '+mm[1]);return s?.[1]?.n||null}
+  // 'V.M74' → winner of match m074
+  mm=/^V\.M(\d+)$/.exec(name);
+  if(mm){
+    const mid='m'+String(mm[1]).padStart(3,'0');
+    const m=st.matches?.[mid];
+    if(m&&m.homeScore!=null)return m.homeScore>m.awayScore?m.home:m.awayScore>m.homeScore?m.away:null;
+  }
+  // 'Perdant M101' → loser of match m101
+  mm=/^Perdant M(\d+)$/.exec(name);
+  if(mm){
+    const mid='m'+String(mm[1]).padStart(3,'0');
+    const m=st.matches?.[mid];
+    if(m&&m.homeScore!=null)return m.homeScore<m.awayScore?m.home:m.awayScore<m.homeScore?m.away:null;
+  }
+  return null; // e.g. '3e Gr.A/B/C/D/F' — too complex, shown as ?
+}
+
 function bcard(mid,cls=''){
   const m=st.matches?.[mid];
   if(!m)return`<div class="bm${cls?' '+cls:''}">
@@ -137,7 +179,12 @@ function bcard(mid,cls=''){
   const played=m.homeScore!=null;
   const hw=played&&m.homeScore>m.awayScore;
   const aw=played&&m.awayScore>m.homeScore;
-  const tn=n=>isPH(n)?'<em>?</em>':(teamDisplay(n)||'?');
+  const tn=n=>{
+    // If already a real name, use it; otherwise try to resolve dynamically
+    let name=n;
+    if(isPH(n)){const r=resolveTeam(n);if(r)name=r;}
+    return isPH(name)?'<em style="color:var(--t2)">?</em>':(teamDisplay(name)||'?');
+  };
   return`<div class="bm${played?' played':''} ${cls}">
     <div class="bm-team${hw?' win':''}">
       <div class="bm-name">${tn(m.home)}</div>
